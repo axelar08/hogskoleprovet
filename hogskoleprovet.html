@@ -37,6 +37,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .quiz-body { max-width: 700px; margin: 0 auto; padding: 2rem 1.5rem; }
 .question-context { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; line-height: 1.7; font-size: 0.95rem; color: #cbd5e1; white-space: pre-line; }
 .question-context:empty { display: none; }
+.dtk-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 0.8rem; }
+.dtk-table { width: 100%; border-collapse: collapse; font-size: 0.87rem; white-space: normal; }
+.dtk-table th { background: #0f172a; color: #94a3b8; font-weight: 600; padding: 0.45rem 0.7rem; text-align: left; border-bottom: 2px solid #475569; }
+.dtk-table td { padding: 0.4rem 0.7rem; border-bottom: 1px solid #263348; }
+.dtk-table tr:last-child td { border-bottom: none; }
+.dtk-table td:not(:first-child), .dtk-table th:not(:first-child) { text-align: right; }
+.dtk-table tr:last-child td { font-weight: 700; color: #e2e8f0; }
+.dtk-note { font-size: 0.78rem; color: #64748b; margin-top: 0.6rem; }
+.dtk-bars { display: flex; flex-direction: column; gap: 0.4rem; white-space: normal; }
+.dtk-bar-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+.dtk-bar-lbl { min-width: 40px; color: #94a3b8; flex-shrink: 0; }
+.dtk-bar-track { flex: 1; background: #263348; border-radius: 3px; height: 16px; overflow: hidden; }
+.dtk-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 3px; }
+.dtk-bar-val { min-width: 36px; text-align: right; color: #e2e8f0; font-size: 0.82rem; }
 .question-text { font-size: 1.15rem; font-weight: 600; margin-bottom: 1.5rem; line-height: 1.5; white-space: pre-line; }
 .options { display: flex; flex-direction: column; gap: 0.6rem; }
 .option-btn { background: #1e293b; border: 2px solid #334155; border-radius: 10px; padding: 1rem 1.25rem; text-align: left; cursor: pointer; transition: all 0.2s; font-size: 1rem; color: #e2e8f0; font-family: inherit; line-height: 1.4; }
@@ -815,80 +829,216 @@ w("sansad","Lugn och förnuftig","Upprörd","Impulsiv","Irrationell","Bevarar lu
           misstag: "Testa alltid att kombinera informationen även om ingen räcker ensam." }
     ]},
 
-    dtk: { title: "DTK – Diagram, tabeller, kartor", color: "kvant", questions: [
-        { context: "Befolkning i Norden 2023 (miljoner):\nSverige: 10,5\nNorge: 5,5\nDanmark: 5,9\nFinland: 5,5\nIsland: 0,4",
-          question: "Hur stor andel utgör Sverige (avrundat)?",
-          options: ["32 %", "38 %", "42 %", "48 %"], correct: 1,
-          explanation: "Total 27,8 milj. 10,5/27,8 ≈ 38 %.",
-          why: "Summera alla: 10,5+5,5+5,9+5,5+0,4 = 27,8. Sveriges andel: 10,5/27,8 ≈ 0,378 = 38 %.",
-          misstag: "Glöm inte att INKLUDERA Sverige i totalen. Felaktigt: 10,5/(27,8-10,5) → fel procent." },
-        { context: "Medeltemperatur Stockholm (°C):\nJan: -3\nApr: 6\nJul: 18\nOkt: 8",
-          question: "Vad är genomsnittlig temperatur för de fyra månaderna?",
-          options: ["5,75", "7,00", "7,25", "8,00"], correct: 2,
-          explanation: "(-3+6+18+8)/4 = 29/4 = 7,25.",
-          why: "Medelvärde: addera alla värden, dela med antalet.",
-          misstag: "Glöm inte att Januari är NEGATIV (-3, inte +3). Ett teckenfel ger summa 35 → fel medel." },
-        { context: "Sålda bilar per kvartal (tusental):\nQ1: 45, Q2: 52, Q3: 38, Q4: 65",
-          question: "Procentuell ökning Q3 → Q4?",
-          options: ["Cirka 41 %", "Cirka 52 %", "Cirka 61 %", "Cirka 71 %"], correct: 3,
-          explanation: "(65-38)/38 ≈ 71 %.",
-          why: "Procentuell förändring = (nytt - gammalt)/gammalt. (65-38)/38 = 27/38 ≈ 0,71 = 71 %.",
-          misstag: "Använd GAMLA värdet (Q3=38) som nämnare, inte det nya (Q4=65). (65-38)/65 ≈ 42 % vore fel svar." },
-        { context: "Transport till jobbet (2000 personer):\nBil 45 %, Kollektivt 30 %, Cykel 15 %, Gång 10 %",
-          question: "Hur många fler åker bil än kollektivt?",
-          options: ["200", "250", "300", "350"], correct: 2,
-          explanation: "Bil 900, kollektivt 600. Differens 300.",
-          why: "45 % av 2000 = 900. 30 % av 2000 = 600. 900 - 600 = 300.",
-          misstag: "Slarva inte med procenträkningen. Beräkna båda antalen först, jämför sedan." },
-        { context: "Nationella prov (% godkända):\nSkola A: Matte 78, Sv 85, Eng 90\nSkola B: Matte 82, Sv 79, Eng 88\nSkola C: Matte 91, Sv 88, Eng 85",
-          question: "Vilken skola har högst snitt?",
-          options: ["A", "B", "C", "Alla lika"], correct: 2,
-          explanation: "A: 84,3. B: 83. C: 88. C vinner.",
-          why: "Beräkna snitt för var och en: A=(78+85+90)/3=84,3. B=(82+79+88)/3=83. C=(91+88+85)/3=88.",
-          misstag: "Kolla inte bara ett ämne. Skola C har lägst engelska men högst snitt totalt." },
-        { context: "BNP-tillväxt (%):\n2019: 1,4\n2020: -2,9\n2021: 5,1\n2022: 2,7\n2023: 0,8",
-          question: "Förändring i BNP-tillväxt 2019 → 2020?",
-          options: ["-1,5 pe", "-4,3 pe", "+3,7 pe", "-2,9 pe"], correct: 1,
-          explanation: "-2,9 - 1,4 = -4,3 procentenheter.",
-          why: "Förändring = nytt - gammalt. -2,9 minus +1,4 = -4,3.",
-          misstag: "Svaret -2,9 (bara 2020-värdet) är en klassisk fälla. Frågan gäller FÖRÄNDRINGEN, inte slutvärdet. Procentenheter ≠ procent!" },
-        { context: "Fördelning av hushållens utgifter:\nBoende 35 %, Mat 20 %, Transport 15 %, Fritid 10 %, Övrigt 20 %\nTotala utgifter: 30 000 kr/mån",
-          question: "Hur mycket spenderas på boende?",
-          options: ["3 000 kr", "6 000 kr", "10 500 kr", "15 000 kr"], correct: 2,
-          explanation: "0,35 · 30 000 = 10 500 kr.",
-          why: "35 % av 30 000 = 30 000 · 0,35 = 10 500.",
-          misstag: "Delsumman 10 500 kr är rätt – men många räknar fel på decimaler eller procenttecken." },
-        { context: "Tabell över besökare per månad:\nJan 1200, Feb 1500, Mar 1800, Apr 2100, Maj 2400",
-          question: "Vilken var den genomsnittliga ökningen per månad?",
-          options: ["200", "250", "300", "350"], correct: 2,
-          explanation: "Total ökning 1200, över 4 intervall = 300/månad.",
-          why: "Maj - Jan = 2400 - 1200 = 1200. Antal intervaller = 4 (Jan→Feb, Feb→Mar, Mar→Apr, Apr→Maj). 1200/4 = 300.",
-          misstag: "Antal intervall = antal månader - 1. Fem månader men bara fyra hopp. Delning med 5 ger 240 (fel)." },
-        { context: "Stapeldiagram över partistöd (%):\nA: 28, B: 22, C: 17, D: 13, E: 10, F: 10",
-          question: "Hur stor andel har de tre minsta partierna tillsammans?",
-          options: ["23 %", "33 %", "40 %", "45 %"], correct: 1,
-          explanation: "De tre minsta: D(13)+E(10)+F(10) = 33 %.",
-          why: "Sortera från minst: F=10, E=10, D=13. Summa 33.",
-          misstag: "Identifiera vilka som är 'minst'. Många slarvar och tar tre random eller de tre FÖRSTA i listan." },
-        { context: "Årsnederbörd (mm) i tre städer:\nGöteborg 758, Stockholm 539, Kiruna 500",
-          question: "Hur många procent mer nederbörd har Göteborg jämfört med Kiruna?",
-          options: ["32 %", "52 %", "65 %", "152 %"], correct: 1,
-          explanation: "(758-500)/500 = 258/500 = 51,6 % ≈ 52 %.",
-          why: "Procentuell skillnad: (stort - litet)/litet. (758-500)/500 = 0,516.",
-          misstag: "152 % är svaret om man frågar 'hur många procent AV' (758/500=152%). Men 'hur många procent MER' betyder ökning, därav -100." },
-        { context: "Skolresultat per år (snittbetyg):\n2020: 210\n2021: 215\n2022: 218\n2023: 225",
-          question: "Under vilket år ökade snittet mest?",
-          options: ["2020→21", "2021→22", "2022→23", "Alla lika"], correct: 2,
-          explanation: "2020→21: +5. 2021→22: +3. 2022→23: +7.",
-          why: "Räkna skillnader: 215-210=5, 218-215=3, 225-218=7. Max = 7 (2022→23).",
-          misstag: "Man kan vilja ta senaste värdet (225) eller ett random svar. Beräkna ALLA skillnader systematiskt." },
-        { context: "Tabell: Anställda per avdelning\nAdm: 25, IT: 40, Försäljning: 85, Produktion: 150",
-          question: "Hur stor andel av de anställda jobbar INTE i produktion?",
-          options: ["30 %", "40 %", "50 %", "60 %"], correct: 2,
-          explanation: "Total 300. Ej produktion: 150. 150/300 = 50 %.",
-          why: "Summera: 25+40+85+150 = 300. Ej produktion = total - produktion = 300-150 = 150. 150/300 = 50%.",
-          misstag: "'INTE' kräver komplementet. Slarva inte och beräkna ANDELEN I produktion i stället." }
-    ]}
+    dtk: { title: "DTK – Diagram, tabeller, kartor", color: "kvant", questions: (function() {
+
+        // === KONTEXT A: Elproduktion i Sverige ===
+        const ctxA = `<div class="dtk-title">Elproduktion i Sverige (TWh)</div>
+<table class="dtk-table">
+<thead><tr><th>Källa</th><th>2010</th><th>2020</th><th>2023</th></tr></thead>
+<tbody>
+<tr><td>Vattenkraft</td><td>66</td><td>72</td><td>71</td></tr>
+<tr><td>Kärnkraft</td><td>56</td><td>49</td><td>47</td></tr>
+<tr><td>Vindkraft</td><td>4</td><td>28</td><td>43</td></tr>
+<tr><td>Övrigt</td><td>14</td><td>11</td><td>9</td></tr>
+<tr><td>Totalt</td><td>140</td><td>160</td><td>170</td></tr>
+</tbody></table>`;
+
+        // === KONTEXT B: PISA-resultat Norden ===
+        const ctxB = `<div class="dtk-title">PISA-resultat – nordiska länder</div>
+<table class="dtk-table">
+<thead><tr><th>Land</th><th>Läsning</th><th>Matematik</th><th>Naturvet.</th></tr></thead>
+<tbody>
+<tr><td>Sverige</td><td>506</td><td>482</td><td>499</td></tr>
+<tr><td>Finland</td><td>520</td><td>507</td><td>522</td></tr>
+<tr><td>Norge</td><td>499</td><td>471</td><td>477</td></tr>
+<tr><td>Danmark</td><td>489</td><td>489</td><td>492</td></tr>
+</tbody></table>
+<div class="dtk-note">Källa: OECD PISA 2022</div>`;
+
+        // === KONTEXT C: Turism – stapeldiagram ===
+        // Max = 8,2 milj (2019) → 100 %
+        const ctxC = `<div class="dtk-title">Utländska besökare i Sverige (miljoner)</div>
+<div class="dtk-bars">
+<div class="dtk-bar-row"><span class="dtk-bar-lbl">2018</span><div class="dtk-bar-track"><div class="dtk-bar-fill" style="width:90%"></div></div><span class="dtk-bar-val">7,4</span></div>
+<div class="dtk-bar-row"><span class="dtk-bar-lbl">2019</span><div class="dtk-bar-track"><div class="dtk-bar-fill" style="width:100%"></div></div><span class="dtk-bar-val">8,2</span></div>
+<div class="dtk-bar-row"><span class="dtk-bar-lbl">2020</span><div class="dtk-bar-track"><div class="dtk-bar-fill" style="width:26%"></div></div><span class="dtk-bar-val">2,1</span></div>
+<div class="dtk-bar-row"><span class="dtk-bar-lbl">2021</span><div class="dtk-bar-track"><div class="dtk-bar-fill" style="width:40%"></div></div><span class="dtk-bar-val">3,3</span></div>
+<div class="dtk-bar-row"><span class="dtk-bar-lbl">2022</span><div class="dtk-bar-track"><div class="dtk-bar-fill" style="width:79%"></div></div><span class="dtk-bar-val">6,5</span></div>
+<div class="dtk-bar-row"><span class="dtk-bar-lbl">2023</span><div class="dtk-bar-track"><div class="dtk-bar-fill" style="width:95%"></div></div><span class="dtk-bar-val">7,8</span></div>
+</div>`;
+
+        // === KONTEXT D: Kommunal budget ===
+        const ctxD = `<div class="dtk-title">Kommunens budget – fördelning (total: 400 mnkr)</div>
+<table class="dtk-table">
+<thead><tr><th>Område</th><th>Andel (%)</th><th>Belopp (mnkr)</th></tr></thead>
+<tbody>
+<tr><td>Skola</td><td>35</td><td>140</td></tr>
+<tr><td>Vård &amp; omsorg</td><td>30</td><td>120</td></tr>
+<tr><td>Infrastruktur</td><td>15</td><td>60</td></tr>
+<tr><td>Kultur &amp; fritid</td><td>5</td><td>20</td></tr>
+<tr><td>Övrigt</td><td>15</td><td>60</td></tr>
+<tr><td>Totalt</td><td>100</td><td>400</td></tr>
+</tbody></table>`;
+
+        // === KONTEXT E: Åldersfördelning Sverige ===
+        const ctxE = `<div class="dtk-title">Befolkningens åldersfördelning, Sverige (%)</div>
+<table class="dtk-table">
+<thead><tr><th>Åldersgrupp</th><th>2000</th><th>2010</th><th>2020</th></tr></thead>
+<tbody>
+<tr><td>0–19 år</td><td>23</td><td>22</td><td>23</td></tr>
+<tr><td>20–64 år</td><td>57</td><td>56</td><td>55</td></tr>
+<tr><td>65+ år</td><td>20</td><td>22</td><td>22</td></tr>
+<tr><td>Totalt</td><td>100</td><td>100</td><td>100</td></tr>
+</tbody></table>
+<div class="dtk-note">Total befolkning 2020: 10,4 miljoner</div>`;
+
+        return [
+            // --- Kontext A ---
+            { contextHtml: ctxA,
+              question: "Hur stor andel av elproduktionen utgjorde vindkraft år 2023?",
+              options: ["15 %", "25 %", "35 %", "45 %"], correct: 1,
+              explanation: "43/170 ≈ 25 %.",
+              why: "43 TWh av totalt 170 TWh: 43 ÷ 170 = 0,253 ≈ 25 %. Totalen hittar du längst ner i tabellen.",
+              misstag: "Vanligt fel: använda 160 (2020-totalen) som nämnare i stället för 170 (2023). Kontrollera alltid rätt kolumn." },
+
+            { contextHtml: ctxA,
+              question: "Hur mycket ökade vindkraften i absoluta TWh mellan 2010 och 2023?",
+              options: ["29 TWh", "34 TWh", "39 TWh", "43 TWh"], correct: 2,
+              explanation: "43 − 4 = 39 TWh.",
+              why: "Läs av värdet 2023 (43) och 2010 (4). Skillnaden 43 − 4 = 39 TWh.",
+              misstag: "43 TWh (2023-värdet) är ett lockande svar, men det är INTE förändringen – det är slutvärdet. Frågan gäller ökningen." },
+
+            { contextHtml: ctxA,
+              question: "Vilken källa minskade mest i procentandel av totalen mellan 2010 och 2023?",
+              options: ["Vattenkraft", "Kärnkraft", "Övrigt", "Alla minskade lika mycket"], correct: 1,
+              explanation: "Kärnkraft: 56/140=40% → 47/170=28%. Minskning 12 pe, störst.",
+              why: "Räkna andelen för varje källa båda åren. Kärnkraft: 2010=40%, 2023=28% (−12 pe). Vatten: 47%→42% (−5 pe). Övrigt: 10%→5% (−5 pe).",
+              misstag: "Titta inte bara på absoluta tal. Kärnkraft minskade med 9 TWh men vattenkraft ökade 5 TWh. Jämför ANDELARNA, inte TWh." },
+
+            { contextHtml: ctxA,
+              question: "Med hur många procent ökade den totala elproduktionen 2010–2023?",
+              options: ["Cirka 11 %", "Cirka 17 %", "Cirka 21 %", "Cirka 30 %"], correct: 2,
+              explanation: "(170−140)/140 = 30/140 ≈ 21 %.",
+              why: "Procentuell ökning = (nytt − gammalt) / gammalt. (170−140)/140 = 30/140 ≈ 0,214 ≈ 21 %.",
+              misstag: "30/170 ≈ 18 % är ett vanligt fel (man delar på det nya värdet). Använd alltid GAMLA värdet som nämnare." },
+
+            // --- Kontext B ---
+            { contextHtml: ctxB,
+              question: "Vilket land har det högsta genomsnittet över alla tre ämnen?",
+              options: ["Sverige", "Finland", "Norge", "Danmark"], correct: 1,
+              explanation: "Finland: (520+507+522)/3 ≈ 516. Klart högst.",
+              why: "Sverige ≈ 496, Finland ≈ 516, Norge ≈ 482, Danmark = 490. Beräkna snitt för alla fyra – Finland vinner klart.",
+              misstag: "Kolla inte bara ett ämne. Sverige har bättre läsning än Danmark men lägre matematikresultat." },
+
+            { contextHtml: ctxB,
+              question: "Hur stor är skillnaden i matematikpoäng mellan Finland och Norge?",
+              options: ["26 poäng", "31 poäng", "36 poäng", "41 poäng"], correct: 2,
+              explanation: "507 − 471 = 36 poäng.",
+              why: "Läs av matematik-kolumnen: Finland 507, Norge 471. 507 − 471 = 36.",
+              misstag: "Blanda inte ihop rader och kolumner. Matematik är tredje kolumnen, inte läsning." },
+
+            { contextHtml: ctxB,
+              question: "Vilket ämne har det lägsta genomsnittet för alla fyra länder sammantaget?",
+              options: ["Läsning", "Matematik", "Naturvetenskap", "Alla är lika"], correct: 1,
+              explanation: "Matematik: (482+507+471+489)/4 = 487. Lägst.",
+              why: "Läsning: (506+520+499+489)/4 = 503,5. Matematik: 1949/4 = 487,25. Naturvet.: 1990/4 = 497,5. Matematik lägst.",
+              misstag: "Räkna snitt för ALLA länder i varje ämne – ta inte bara ett land som representant." },
+
+            { contextHtml: ctxB,
+              question: "I vilket land är skillnaden mellan läsning och matematik störst?",
+              options: ["Sverige", "Finland", "Norge", "Danmark"], correct: 2,
+              explanation: "Norge: 499 − 471 = 28 poäng. Störst.",
+              why: "Sverige: 506−482=24. Finland: 520−507=13. Norge: 499−471=28. Danmark: 489−489=0. Norge har störst gap.",
+              misstag: "Sverige är lockande (det syns tydligt i tabellen) men skillnaden 24 är inte lika stor som Norges 28." },
+
+            { contextHtml: ctxB,
+              question: "Vilket land presterar relativt bättre i naturvetenskap jämfört med matematik?",
+              options: ["Sverige", "Finland", "Norge", "Danmark"], correct: 0,
+              explanation: "Sverige: nat−mat = 499−482 = +17. Störst positiv skillnad.",
+              why: "Sverige +17, Finland +15, Norge +6, Danmark +3. Sverige har störst försprång i naturvet. jämfört med matte.",
+              misstag: "Titta på SKILLNADEN (nat − mat) per land, inte de absoluta värdena." },
+
+            // --- Kontext C ---
+            { contextHtml: ctxC,
+              question: "Under vilket år var antalet utländska besökare lägst?",
+              options: ["2018", "2020", "2021", "2022"], correct: 1,
+              explanation: "2020 hade 2,1 miljoner besökare – klart lägst.",
+              why: "Läs av staplarnas värden: 2020=2,1 milj. Alla andra år överstiger 3 milj.",
+              misstag: "2021 (3,3 milj) är den näst lägsta, men 2020 är klart lägst. Läs värdena, inte bara stapelns visuella höjd." },
+
+            { contextHtml: ctxC,
+              question: "Hur stor var den procentuella minskningen i besökare från 2019 till 2020?",
+              options: ["Cirka 54 %", "Cirka 64 %", "Cirka 74 %", "Cirka 84 %"], correct: 2,
+              explanation: "(8,2 − 2,1) / 8,2 = 6,1/8,2 ≈ 74 %.",
+              why: "Procentuell minskning = (gammalt − nytt) / gammalt. (8,2−2,1)/8,2 = 6,1/8,2 ≈ 0,744 ≈ 74 %.",
+              misstag: "2,1/8,2 ≈ 26 % visar kvarvarande andel, INTE minskningen. Minskning = 100 % − 26 % = 74 %." },
+
+            { contextHtml: ctxC,
+              question: "Hur stor procentuell ökning skedde från 2021 till 2022?",
+              options: ["Cirka 57 %", "Cirka 77 %", "Cirka 97 %", "Cirka 117 %"], correct: 2,
+              explanation: "(6,5 − 3,3) / 3,3 = 3,2/3,3 ≈ 97 %.",
+              why: "(6,5−3,3)/3,3 = 3,2/3,3 ≈ 0,97 = 97 %. Nästan en fördubbling.",
+              misstag: "Använd 2021-värdet (3,3) som nämnare, inte 2022-värdet (6,5)." },
+
+            // --- Kontext D ---
+            { contextHtml: ctxD,
+              question: "Hur mycket mer avsätts till skola än till vård och omsorg?",
+              options: ["10 mnkr", "20 mnkr", "30 mnkr", "40 mnkr"], correct: 1,
+              explanation: "140 − 120 = 20 mnkr.",
+              why: "Skola: 35 % × 400 = 140 mnkr. Vård: 30 % × 400 = 120 mnkr. Differens = 20 mnkr.",
+              misstag: "Beloppen finns direkt i tabellen – du behöver inte räkna om. 140 − 120 = 20." },
+
+            { contextHtml: ctxD,
+              question: "Kultur & fritid och Övrigt utgör tillsammans hur stor andel av budgeten?",
+              options: ["15 %", "20 %", "25 %", "30 %"], correct: 1,
+              explanation: "5 % + 15 % = 20 %.",
+              why: "Addrera de två andelarna: Kultur 5 % + Övrigt 15 % = 20 %.",
+              misstag: "Många räknar 20 + 60 = 80 mnkr → 80/400 = 20 %. Korrekt! Men det snabbaste är att addera procentandelarna direkt." },
+
+            { contextHtml: ctxD,
+              question: "Om totalbudgeten ökar med 10 %, hur mycket avsätts då till skola (med samma procentandel)?",
+              options: ["144 mnkr", "150 mnkr", "154 mnkr", "160 mnkr"], correct: 2,
+              explanation: "35 % × 440 = 154 mnkr.",
+              why: "Ny total: 400 × 1,10 = 440 mnkr. Skola: 35 % × 440 = 154 mnkr.",
+              misstag: "140 × 1,10 = 154 ger samma svar – båda metoderna fungerar. Var noga med vilken procentsats du applicerar." },
+
+            { contextHtml: ctxD,
+              question: "Skola och infrastruktur står för hur stor andel tillsammans?",
+              options: ["40 %", "45 %", "50 %", "55 %"], correct: 2,
+              explanation: "35 % + 15 % = 50 %.",
+              why: "Läs av tabellen: skola 35 %, infrastruktur 15 %. Summa = 50 % = exakt hälften av budgeten.",
+              misstag: "Lägg inte ihop fel rader. Det är skola (35) + infrastruktur (15) = 50, inte skola + vård." },
+
+            // --- Kontext E ---
+            { contextHtml: ctxE,
+              question: "Hur många av Sveriges 10,4 miljoner invånare år 2020 var 65 år eller äldre?",
+              options: ["1,8 milj", "2,1 milj", "2,3 milj", "2,5 milj"], correct: 2,
+              explanation: "22 % × 10,4 = 2,288 ≈ 2,3 milj.",
+              why: "Läs av 65+-raden för 2020: 22 %. 0,22 × 10,4 = 2,288 ≈ 2,3 miljoner.",
+              misstag: "20 % × 10,4 = 2,08 ≈ 2,1 milj vore fel (det är 2000-siffran, inte 2020)." },
+
+            { contextHtml: ctxE,
+              question: "Med hur många procentenheter förändrades andelen 20–64 år från 2000 till 2020?",
+              options: ["−1 pe", "−2 pe", "−3 pe", "+1 pe"], correct: 1,
+              explanation: "55 − 57 = −2 procentenheter.",
+              why: "Läs av: 2000=57 %, 2020=55 %. Förändring = 55−57 = −2 pe.",
+              misstag: "−2 pe och −2 % är INTE samma sak. Frågan gäller procentenheter (direkt skillnad i andelar)." },
+
+            { contextHtml: ctxE,
+              question: "Vilken åldersgrupp ökade sin andel av befolkningen 2000–2020?",
+              options: ["0–19 år", "20–64 år", "65+ år", "Ingen ökade"], correct: 2,
+              explanation: "65+: ökade från 20 % till 22 %.",
+              why: "0–19: 23→23 (oförändrad). 20–64: 57→55 (minskning). 65+: 20→22 (ökning med 2 pe).",
+              misstag: "0–19-gruppen är densamma 2000 och 2020 (23 %) – den ökade inte, den är stabil." },
+
+            { contextHtml: ctxE,
+              question: "Hur stort var det totala antalet barn och ungdomar (0–19 år) i Sverige 2020?",
+              options: ["2,2 milj", "2,4 milj", "2,6 milj", "2,8 milj"], correct: 1,
+              explanation: "23 % × 10,4 = 2,392 ≈ 2,4 milj.",
+              why: "0–19-gruppen utgör 23 % av 10,4 miljoner: 0,23 × 10,4 = 2,392 ≈ 2,4 milj.",
+              misstag: "Kontrollera att du läser 2020-kolumnen (23 %) och inte 2010 (22 %). Liten skillnad ger fel svar." }
+        ];
+    })() }
 };
 
 const sectionMeta = {
@@ -1101,7 +1251,9 @@ function renderQuestion() {
     const total = shuffledQuestions.length;
     document.getElementById('quiz-progress').textContent = `Fråga ${currentQuestionIndex + 1} av ${total}`;
     document.getElementById('quiz-score').textContent = `${score} rätt`;
-    document.getElementById('question-context').textContent = q.context || '';
+    const ctxEl = document.getElementById('question-context');
+    if (q.contextHtml) { ctxEl.style.whiteSpace = 'normal'; ctxEl.innerHTML = q.contextHtml; }
+    else { ctxEl.style.whiteSpace = 'pre-line'; ctxEl.textContent = q.context || ''; }
     document.getElementById('question-text').textContent = q.question;
     const optionsEl = document.getElementById('options');
     optionsEl.innerHTML = '';
