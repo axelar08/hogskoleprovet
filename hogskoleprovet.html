@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Högskoleprovet - Studieapp</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: block; }
+.hero { text-align: center; padding: 3rem 1rem 1.5rem; }
+.hero h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -1px; }
+.subtitle { color: #94a3b8; margin-top: 0.5rem; font-size: 1.1rem; }
+.section-grid { max-width: 900px; margin: 0 auto; padding: 1rem; }
+.section-group { margin-bottom: 2rem; }
+.section-group h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 1rem; padding-left: 0.25rem; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+.card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 0.3rem; text-align: left; color: #e2e8f0; font-family: inherit; }
+.card:hover { transform: translateY(-2px); border-color: #60a5fa; box-shadow: 0 4px 20px rgba(96, 165, 250, 0.15); }
+.card-code { font-size: 1.5rem; font-weight: 800; letter-spacing: 1px; }
+.card-verbal .card-code { color: #60a5fa; }
+.card-kvant .card-code { color: #a78bfa; }
+.card-name { font-size: 0.9rem; font-weight: 600; }
+.card-desc { font-size: 0.8rem; color: #64748b; }
+.card-count { font-size: 0.7rem; color: #475569; margin-top: 0.3rem; }
+.stats-bar { max-width: 900px; margin: 1rem auto 2rem; padding: 0 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+.stat-chip { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 0.4rem 0.8rem; font-size: 0.75rem; color: #94a3b8; }
+.stat-chip strong { color: #e2e8f0; }
+.quiz-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; background: #1e293b; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 10; }
+.btn-back { background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-family: inherit; }
+.btn-back:hover { border-color: #60a5fa; color: #60a5fa; }
+.quiz-info { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+.quiz-title { font-weight: 700; font-size: 1rem; }
+.quiz-progress { font-size: 0.8rem; color: #64748b; }
+.quiz-score { font-size: 0.9rem; color: #94a3b8; }
+.quiz-body { max-width: 700px; margin: 0 auto; padding: 2rem 1.5rem; }
+.question-context { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; line-height: 1.7; font-size: 0.95rem; color: #cbd5e1; white-space: pre-line; }
+.question-context:empty { display: none; }
+.question-text { font-size: 1.15rem; font-weight: 600; margin-bottom: 1.5rem; line-height: 1.5; white-space: pre-line; }
+.options { display: flex; flex-direction: column; gap: 0.6rem; }
+.option-btn { background: #1e293b; border: 2px solid #334155; border-radius: 10px; padding: 1rem 1.25rem; text-align: left; cursor: pointer; transition: all 0.2s; font-size: 1rem; color: #e2e8f0; font-family: inherit; line-height: 1.4; }
+.option-btn:hover:not(:disabled) { border-color: #60a5fa; background: #1e3a5f; }
+.option-btn.correct { border-color: #22c55e; background: #14532d; }
+.option-btn.wrong { border-color: #ef4444; background: #450a0a; }
+.option-btn:disabled { cursor: default; }
+.feedback { margin-top: 1.25rem; padding: 1.25rem; border-radius: 10px; font-size: 0.95rem; line-height: 1.6; display: none; }
+.feedback.show { display: block; }
+.feedback.correct { background: #14532d; border: 1px solid #22c55e; color: #bbf7d0; }
+.feedback.wrong { background: #3f1212; border: 1px solid #ef4444; color: #fecaca; }
+.feedback-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+.feedback-section { margin-top: 0.75rem; }
+.feedback-section-label { font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.85; margin-bottom: 0.25rem; }
+.btn-next { margin-top: 1.5rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; color: white; padding: 0.8rem 2rem; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; font-family: inherit; width: 100%; }
+.results-container { max-width: 500px; margin: 0 auto; padding: 3rem 1.5rem; text-align: center; }
+.results-container h2 { font-size: 1.8rem; margin-bottom: 1rem; }
+.results-icon { font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700; color: #60a5fa; }
+.results-score { font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; }
+.results-message { color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem; }
+.results-breakdown { text-align: left; margin-bottom: 2rem; }
+.result-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid #1e293b; font-size: 0.9rem; }
+.result-marker { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.result-marker.correct { background: #22c55e; }
+.result-marker.wrong { background: #ef4444; }
+.results-actions { display: flex; gap: 0.75rem; flex-direction: column; }
+.btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; color: white; padding: 0.8rem 2rem; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-secondary { background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.8rem 2rem; border-radius: 10px; font-size: 1rem; cursor: pointer; font-family: inherit; }
+@media (max-width: 600px) {
+    .hero h1 { font-size: 2rem; }
+    .cards { grid-template-columns: 1fr 1fr; }
+    .quiz-body { padding: 1.5rem 1rem; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+    <div id="start-screen" class="screen active">
+        <div class="hero">
+            <h1>Högskoleprovet</h1>
+            <p class="subtitle">Välj ett delprov att öva på</p>
+        </div>
+        <div class="section-grid">
+            <div class="section-group">
+                <h2>Verbal del</h2>
+                <div class="cards" id="verbal-cards"></div>
+            </div>
+            <div class="section-group">
+                <h2>Kvantitativ del</h2>
+                <div class="cards" id="kvant-cards"></div>
+            </div>
+        </div>
+        <div class="stats-bar" id="stats-bar"></div>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div class="quiz-header">
+            <button class="btn-back" id="btn-back">← Tillbaka</button>
+            <div class="quiz-info">
+                <span id="quiz-title" class="quiz-title"></span>
+                <span id="quiz-progress" class="quiz-progress"></span>
+            </div>
+            <div class="quiz-score" id="quiz-score"></div>
+        </div>
+        <div class="quiz-body">
+            <div id="question-context" class="question-context"></div>
+            <div id="question-text" class="question-text"></div>
+            <div id="options" class="options"></div>
+            <div id="feedback" class="feedback"></div>
+            <button id="next-btn" class="btn-next" style="display:none">Nästa fråga</button>
+        </div>
+    </div>
+
+    <div id="results-screen" class="screen">
+        <div class="results-container">
+            <h2>Resultat</h2>
+            <div id="results-icon" class="results-icon"></div>
+            <div id="results-score" class="results-score"></div>
+            <div id="results-message" class="results-message"></div>
+            <div id="results-breakdown" class="results-breakdown"></div>
+            <div class="results-actions">
+                <button class="btn-primary" id="btn-retry">Försök igen</button>
+                <button class="btn-secondary" id="btn-home">Välj annat delprov</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Varje fråga har:
+//   question, options, correct (index), explanation (kort, alltid visad)
+//   why: varför rätt svar är rätt (detaljerad)
+//   misstag: vanliga felaktiga resonemang (visas vid fel svar)
+
+const questionBank = {
+    ord: { title: "ORD – Ordförståelse", color: "verbal", questions: (function() {
+        const w = (word, rätt, f1, f2, f3, why, miss) => ({
+            question: `Vad betyder ordet '${word}'?`,
+            options: [rätt, f1, f2, f3],
+            correct: 0,
+            explanation: rätt + ".",
+            why: why,
+            misstag: miss
+        });
+        return [
+w("redundant","Överflödig","Nödvändig","Komplicerad","Ursprunglig","Från latinets 'redundare' (rinna över). Mer än vad som behövs.","Tros betyda 'nödvändig' eftersom redundanta säkerhetssystem är viktiga – men ordet syftar på överskottet."),
+w("pragmatisk","Praktisk och lösningsinriktad","Teoretisk","Pessimistisk","Överdriven","Från grekiskans 'pragma' (handling). Fokus på vad som fungerar, inte ideologi.","Förväxlas med dogmatisk (motsatsen) eller pessimistisk eftersom orden låter lika."),
+w("altruistisk","Osjälvisk","Självisk","Likgiltig","Ambitiös","Från latinets 'alter' (den andra). Att tänka på andras bästa.","Blandas ihop med egoistisk – båda slutar på -isk. Kom ihåg: alter = andra."),
+w("ambivalent","Kluven","Beslutsam","Engagerad","Likgiltig","'Ambi' = båda, 'valent' = värde. Värderar båda sidor samtidigt.","Förväxlas med 'likgiltig' – men ambivalent BRYR sig starkt, åt båda håll."),
+w("dogmatisk","Håller fast vid åsikter utan omprövning","Flexibel","Vetenskaplig","Humoristisk","Ett dogma = lärosats som tas för given. Accepterar inte motargument.","Skillnad mot 'principfast': principfast kan motivera, dogmatisk bara fastslår."),
+w("adekvat","Tillräcklig och lämplig","Överdriven","Otillräcklig","Exakt","Varken för lite eller för mycket, precis vad situationen kräver.","Förväxlas med 'exakt' – adekvat betyder inte perfekt, bara tillräckligt."),
+w("kontroversiell","Omstridd","Obestridlig","Traditionell","Föråldrad","Från latinets 'controversus' (vänd emot). Har både för- och motståndare.","Ordet är neutralt – det säger bara att åsikterna går isär, inte att något är fel."),
+w("eskalerande","Upptrappande","Avtagande","Stagnerande","Fluktuerande","Från italienskans 'scala' (trappa). Stegras steg för steg.","Förväxlas med 'fluktuerande' (svänger upp/ner). Eskalerande går bara UPP."),
+w("sporadisk","Oregelbunden och sällsynt","Regelbunden","Tätt förekommande","Kontinuerlig","Från grekiskans 'sporadikos' (utspridd). Enstaka utan mönster.","Tros betyda 'ofta' – men sporadisk är alltid SÄLLSYNT."),
+w("empatisk","Inkännande","Likgiltig","Aggressiv","Analytisk","Förmågan att sätta sig in i annans känsloliv.","Förväxlas med 'emfatisk' (eftertrycklig) – liknande stavning, olika betydelse."),
+w("explicit","Uttryckligt uttalat","Underförstått","Känsligt","Förbjudet","Motsats till implicit. Direkt utsagt.","På engelska kan 'explicit' betyda vuxet innehåll, men i svenska är det bara 'tydligt'."),
+w("implicit","Underförstådd","Uttalad","Förnekad","Upprepad","Med 'mellan raderna'. Antydd men inte direkt sagd.","Minnesregel: IMplicit = Inte uttalat. EXplicit = EXtra tydligt."),
+w("konsensus","Samsyn","Oenighet","Majoritetsbeslut","Diskussion","Från latinets 'consensus' (samstämmighet). Alla överens.","Är starkare än majoritetsbeslut – kräver att ingen motsätter sig aktivt."),
+w("paradoxal","Skenbart självmotsägande","Logisk","Komplicerad","Uppenbar","Något som verkar motsäga sig självt men kan vara sant.","Förväxlas med 'ologisk' – men en paradox är inte fel, bara överraskande."),
+w("subtil","Diskret och finstilt","Tydlig","Aggressiv","Grov","En liten men betydelsefull skillnad. Subtil humor kräver eftertanke.","Tro inte att subtil = 'undergiven' – det är ett helt annat ord."),
+w("obskyr","Dunkel eller okänd","Känd","Ljus","Enkel","Från latinets 'obscurus' (mörk). Svårbegriplig eller okänd.","Har ibland negativ biklang (tvivelaktig) men grundbetydelsen är bara 'oklar'."),
+w("nyanserad","Innehåller flera skiftningar","Förenklad","Extrem","Färgad","Från franskans 'nuance'. Tar hänsyn till flera perspektiv.","Tros betyda 'neutral' – men nyanserad kan ha en åsikt, bara genomtänkt."),
+w("kategorisk","Bestämd och absolut","Tveksam","Försiktig","Rörande","Ett kategoriskt nej är definitivt, utan utrymme för diskussion.","Förväxlas med 'kategoriserad' (indelad) som betyder något helt annat."),
+w("prekär","Osäker och bekymmersam","Trygg","Enkel","Lyxig","En prekär situation är otrygg och kan förvärras snabbt.","Liknar 'precis' men har inget med det att göra. Tänk på 'prekariatet'."),
+w("rigorös","Sträng och noggrann","Slapp","Gemytlig","Flexibel","En rigorös undersökning lämnar inga stenar orörda.","Förväxlas med 'rigid' (stel) som är mer negativt laddat."),
+w("marginell","Obetydlig","Central","Dominerande","Genomgripande","Ligger i 'marginalen'. En marginell förbättring är nästan obetydlig.","Skillnad mot 'minimal': marginell = nästan obetydlig, minimal = minsta möjliga."),
+w("utopisk","Orealistiskt idealiserad","Realistisk","Pessimistisk","Historisk","Från Thomas Mores 'Utopia' (1516). Grekiska 'ou-topos' = ingenstans.","Skillnad mot optimistisk: optimism tror på det goda, utopism på det perfekta."),
+w("skeptisk","Tvivlande","Godtrogen","Övertygad","Nöjd","Kräver bevis innan man tror på något. Från grekiskans 'skeptikos'.","Skepsis är INTE cynism (förakt) eller pessimism – bara krav på belägg."),
+w("benägenhet","Tendens eller böjelse","Ovilja","Förmåga","Plikt","Om man har benägenhet är man lätt att få med sig åt det hållet.","Skillnad mot 'förmåga': man kan ha förmåga utan benägenhet (kan men vill inte)."),
+w("avsiktlig","Planerad och medveten","Slumpmässig","Motvillig","Snabb","Motsats till oavsiktlig. Gjord med vilja.","Ofta testas det som synonym till 'medveten'/'planerad' – de är synonymer."),
+w("autentisk","Äkta","Falsk","Kopierad","Ytlig","Från grekiskans 'authentikos' (äkta). Inte en kopia eller förfalskning.","Förväxlas med 'original' – autentisk betyder äkta, inte nödvändigtvis först i tid."),
+w("banal","Trivial och alldaglig","Komplicerad","Ovanlig","Djupgående","Från franska 'banal' (vanlig). Så vanligt att det är ointressant.","Ordet är negativt – antyder att något är intetsägande, inte bara enkelt."),
+w("blygsam","Ödmjuk","Skrytsam","Dominerande","Aggressiv","Drar sig undan uppmärksamhet. Inte självutnämnande.","Skillnad mot 'tyst': blygsam syftar på att inte skryta, tyst på att inte prata."),
+w("cynisk","Misstrogen","Godtrogen","Optimistisk","Idealistisk","Tror att människor styrs av egennytta. Ursprungligen en filosofisk skola.","Förväxlas med 'skeptisk' – cyniker tror inget är genuint, skeptiker kräver bara bevis."),
+w("defensiv","Försvarande","Anfallande","Passiv","Aggressiv","Som försvarar (sig själv eller annat). Vanligt inom sport.","Förväxlas med 'passiv' – defensiv är aktivt försvar, passiv är ingen handling alls."),
+w("diskret","Finkänslig och tystlåten","Högljudd","Skrytsam","Störande","Håller låg profil, för inte vidare det man hör.","Inom matematik betyder diskret även 'åtskild/icke-kontinuerlig' – helt annan betydelse."),
+w("egalitär","Jämlikhetsivrande","Hierarkisk","Elitistisk","Konservativ","Förespråkar lika rättigheter för alla. Från franska 'égal' (lika).","Är inte samma som 'demokratisk' – egalitär rör all social jämlikhet."),
+w("empirisk","Baserad på erfarenhet","Teoretisk","Fantasifull","Ologisk","Från grekiska 'empeiria' (erfarenhet). Baserad på observation/försök.","Motsats till rent teoretisk. Empirisk forskning kräver faktiska mätningar."),
+w("essentiell","Väsentlig","Oviktig","Valfri","Tillfällig","Av själva essensen – absolut nödvändig, inte bara önskvärd.","Förväxlas med 'viktig' – essentiell är starkare, betyder oumbärlig."),
+w("estetisk","Skönhetsrelaterad","Praktisk","Moralisk","Logisk","Från grekiska 'aisthesis' (förnimmelse). Hur något upplevs visuellt.","Förväxlas med 'asketisk' (sparsam livsstil) – helt annan betydelse."),
+w("euforisk","Lyckorusig","Ledsen","Likgiltig","Förvirrad","Känsla av överväldigande glädje eller upprymdhet.","Stavas med eu-, inte 'yu-' eller 'ö-'."),
+w("evident","Uppenbar","Dold","Osäker","Tvivelaktig","Från latinets 'evidens' (tydlig). Så tydligt att det inte kräver bevis.","Samma betydelse som engelska 'evident' – 'tydlig'."),
+w("exceptionell","Ovanligt framstående","Vanlig","Misslyckad","Medelmåttig","Utgör ett undantag från det vanliga. Mycket bättre än standard.","Är nästan alltid positivt laddat – 'exceptionellt dålig' låter konstigt."),
+w("extrovert","Utåtriktad","Inåtvänd","Blyg","Tystlåten","Får energi av att umgås. Från latinets 'extra' (utåt) + 'vertere' (vända).","Motsatsen är introvert. Ordet handlar om energiriktning."),
+w("flagrant","Uppenbar (ofta om fel)","Dold","Mindre","Obetydlig","Från latinets 'flagrare' (brinna). Så tydligt att det är skamligt.","Används mest om fel: 'flagrant lagbrott' = uppenbart brott."),
+w("frekvent","Ofta förekommande","Sällsynt","Omöjlig","Tvetydig","Från latinets 'frequens' (talrik). Hög frekvens = ofta.","Är INTE samma som 'frekvens' (antal per tid) – adjektivet betyder 'ofta'."),
+w("fundamental","Grundläggande","Ytlig","Tillfällig","Onödig","Från latinets 'fundamentum' (grund). Så viktigt att allt annat vilar på det.","Förväxlas med 'fundamentalistisk' – helt annan betydelse."),
+w("genuin","Äkta","Falsk","Överdriven","Kopia","Uppriktigt, inte spelat.","Synonym till autentisk, men 'genuin' används oftare om känslor och personlighet."),
+w("heterogen","Blandad","Enhetlig","Renrasig","Symmetrisk","Från grekiska 'heteros' (olika) + 'genos' (slag).","Motsats till homogen. 'Hetero' = olika, har olika beståndsdelar."),
+w("homogen","Enhetlig","Blandad","Splittrad","Olika","Från grekiska 'homos' (samma). Av samma slag genomgående.","Motsats till heterogen. En homogen lösning är likformig överallt."),
+w("hypotetisk","Antagen som möjlig","Bevisad","Orealistisk","Påtaglig","Grundad på en hypotes – alltså inte fastställd.","Skillnad mot 'teoretisk': hypotetisk = antagande, teoretisk = abstrakt."),
+w("idyllisk","Harmonisk och fridfull","Kaotisk","Spännande","Tråkig","Från grekiska 'idyll' (liten naturbild). Fridfullt, ofta lite för perfekt.","Har ofta en biton av 'för bra för att vara sant'."),
+w("illusorisk","Skenbar","Verklig","Konkret","Tydlig","Baserad på en illusion. Verkar verklig men är det inte.","Skillnad mot 'imaginär': illusorisk är något som ser ut att finnas."),
+w("immanent","Iboende","Yttre","Transcendent","Frånvarande","Filosofi: finns INOM något, inte utanför. Motsats till transcendent.","Förväxlas med 'imminent' (förestående) – helt annan betydelse!"),
+w("inert","Passiv, overksam","Aktiv","Explosiv","Reaktiv","Från kemin: reagerar inte med andra ämnen (t.ex. ädelgaser).","Stavas med I, inte E. Betyder inte 'tröttande'."),
+w("innovativ","Nyskapande","Traditionell","Konservativ","Stel","Från latinets 'innovare' (förnya). Introducerar något nytt.","Skillnad mot 'kreativ': innovativ handlar om att skapa något NYTT och användbart."),
+w("integritet","Hederlighet och helhet","Korruption","Svaghet","Eftergivenhet","Från latinets 'integer' (hel). Att hålla fast vid sina principer.","Betyder också 'privat sfär' på svenska ('personlig integritet')."),
+w("intuitiv","Instinktiv, känslomässig","Logisk","Utdragen","Komplicerad","Baserad på magkänsla utan medveten tankegång.","Intuition är inte irrationell – kan vara expertis bearbetad undermedvetet."),
+w("kausal","Orsaksmässig","Tillfällig","Irrelevant","Parallell","Rör orsak-verkan. Kausalt samband = orsak leder till verkan.","Är INTE samma som 'korrelation' – korrelation visar samband, kausalitet orsak."),
+w("klandervärd","Kritisabel","Berömvärd","Irrelevant","Omoralisk","Förtjänar klander (kritik). Bör ifrågasättas.","Används om handlingar: 'en klandervärd handling'."),
+w("kompetent","Duglig","Inkompetent","Nybörjare","Medelmåttig","Har tillräcklig kunskap och förmåga för uppgiften.","Är en miniminivå – inte samma som 'expert' eller 'utmärkt'."),
+w("konciliant","Försonlig","Aggressiv","Stridslysten","Arrogant","Söker samförstånd, vill undvika konflikt.","Sällsynt ord som kan dyka upp på HP – lär dig särskilt!"),
+w("konkret","Påtaglig och specifik","Abstrakt","Filosofisk","Oklar","Från latinets 'concretus' (sammanvuxen). Tydligt exemplifierad.","Motsats till abstrakt. 'Ett konkret exempel' = specifikt exempel."),
+w("konsekvent","Följdriktig","Inkonsekvent","Tvetydig","Slumpmässig","Följer samma linje genomgående, utan motsägelser.","Skillnad mot 'konsekvens' (följd). Konsekvent = hållning, konsekvens = resultat."),
+w("kontemplativ","Begrundande","Aktiv","Impulsiv","Distraherad","Inåtvänd eftertanke, meditativ hållning.","Skillnad mot 'passiv': kontemplativ är aktiv tankeverksamhet."),
+w("konträr","Motsatt","Likadan","Parallell","Neutral","Motsatt riktning eller åsikt. 'Konträra uppfattningar' = motsatta.","Förväxlas med 'kontrasterande' – konträr är starkare, rakt motsatt."),
+w("latent","Förborgad, vilande","Synlig","Konstant","Aktiv","Finns där men inte manifesterad ännu. Vilande potential.","Motsats till manifest (öppen). En latent sjukdom bryter inte ut ännu."),
+w("legitim","Rättmätig","Olaglig","Falsk","Irrelevant","Från latinets 'legitimus' (laglig). Godtagbar enligt regler/normer.","Legal = enligt lag. Legitim = godtagbar i bredare mening (moraliskt/socialt)."),
+w("likgiltig","Oberörd","Intresserad","Passionerad","Engagerad","Utan intresse eller engagemang.","Skillnad mot 'ambivalent': likgiltig bryr sig inte alls, ambivalent åt båda håll."),
+w("lukrativ","Lönsam","Olönsam","Komplicerad","Riskfri","Från latinets 'lucrum' (vinst). Ger bra ekonomisk avkastning.","Stavas med 'kr', inte 'kv'. Enbart ekonomisk betydelse."),
+w("lakonisk","Kortfattad","Pratsam","Utförlig","Omständlig","Från Lakonien (Sparta) – spartanerna var kända för korta svar.","Skillnad mot 'kortfattad' – lakonisk antyder också viss torrhet."),
+w("melankolisk","Svårmodig","Glad","Arg","Förvånad","Från grekiska 'melan' (svart) + 'chole' (galla).","Skillnad mot 'deprimerad': melankolisk är mildare, mer kontemplativ sorg."),
+w("metodisk","Systematisk","Slumpmässig","Kaotisk","Impulsiv","Arbetar enligt en tydlig metod, steg för steg.","Förväxlas med 'metodologisk' (om metoden själv) – olika ord!"),
+w("minutiös","Mycket noggrann","Slarvig","Snabb","Översiktlig","Från minut – uppmärksam på minsta detalj.","Skillnad mot 'noggrann': minutiös är EXTREMT noggrann, närmast pedantisk."),
+w("moderat","Måttlig","Extrem","Radikal","Överdriven","Varken för mycket eller för lite. Mellanväg.","Är även namn på parti – men ordet betyder ursprungligen bara 'måttlig'."),
+w("monoton","Enformig","Varierad","Dynamisk","Spännande","Från grekiska 'monos' (ett) + 'tonos' (ton). Samma ton hela tiden.","Ofta negativt – antyder att enformigheten är tråkig."),
+w("naiv","Godtrogen","Cynisk","Erfaren","Beräknande","Tror gott om andra, saknar världslig erfarenhet.","Är inte samma som 'okunnig': naiv handlar om förtroende, inte kunskap."),
+w("narcissistisk","Självupptagen","Osjälvisk","Osäker","Blygsam","Från myten om Narcissus som förälskade sig i sin spegelbild.","Är mer än fåfänga – innebär brist på empati för andra."),
+w("nedlåtande","Föraktfull","Ödmjuk","Jämlik","Beundrande","Behandlar andra som underlägsna.","Skillnad mot 'överlägsen': nedlåtande är hur man BEHANDLAR, inte är."),
+w("objektiv","Opartisk","Subjektiv","Emotionell","Partisk","Oberoende av personliga känslor eller åsikter.","Skillnad mot 'fair': objektiv är att UTESLUTA eget perspektiv, fair är rättvisa."),
+w("ombytlig","Föränderlig","Konstant","Stabil","Pålitlig","Byter sinne eller tillstånd ofta. Ofta negativt (opålitlig).","Skillnad mot 'flexibel': flexibel = positivt, ombytlig = negativt (oförutsägbar)."),
+w("omdömesgill","Klok och eftertänksam","Tanklös","Impulsiv","Okunnig","Har gott omdöme, kan bedöma situationer väl.","Handlar om PRAKTISK visdom – inte bara teoretisk kunskap."),
+w("ortodox","Traditionsbunden","Nyskapande","Flexibel","Liberal","Följer rättrogen tradition. Från grekiska 'orthos' (rätt) + 'doxa' (åsikt).","I religion: rättroende. I allmänt bruk: konventionellt accepterad."),
+w("ostentativ","Uppseendeväckande","Diskret","Hemlig","Undertryckt","Visar upp sig för att få uppmärksamhet.","Förväxlas med 'demonstrativ' – ostentativ är mer skrytsam."),
+w("paradigm","Mönster eller modell","Avvikelse","Regel","Undantag","Från grekiska 'paradeigma'. Ett etablerat tankemönster (Kuhn).","Används nu ofta slarvigt – strikt är det ett helt ramverk av antaganden."),
+w("parallell","Motsvarande, jämlöpande","Motsatt","Slumpmässig","Osammanhängande","Löper sida vid sida, utan att korsas.","Skillnad mot 'likadan': parallell betonar att de inte möts."),
+w("paternalistisk","Förmyndande","Jämlik","Passiv","Likgiltig","Beter sig som en 'fader' – bestämmer 'för ditt eget bästa'.","Från latinets 'pater' (far). Nedsättande – antyder översitteri."),
+w("pedantisk","Överdrivet noggrann","Slarvig","Flexibel","Storsynt","Insisterar på detaljer även när de inte betyder något.","Skillnad mot 'minutiös' (nödvändig noggrannhet) – pedantisk är onödig."),
+w("perifer","Avlägsen, i utkanten","Central","Viktig","Dominerande","Ligger i periferin – vid sidan av centrum.","Motsats till central. 'Perifer fråga' = mindre viktig fråga."),
+w("pertinent","Relevant","Irrelevant","Ovidkommande","Vag","Ligger nära ämnet, passande.","Ovanligt ord i svenskan – dyker ibland upp på HP."),
+w("pessimistisk","Negativ syn","Optimistisk","Realistisk","Rationell","Från latinets 'pessimus' (sämst). Förväntar sig det värsta.","Skillnad mot 'realistisk': pessimist förväntar sig det SÄMSTA, realist det TROLIGASTE."),
+w("plausibel","Rimlig","Osannolik","Omöjlig","Bevisad","Låter troligt, kan vara sant. Men ännu inte bekräftad.","Är svagare än 'trolig' – plausibelt betyder bara 'inte orimligt'."),
+w("polariserad","Uppdelad i motpoler","Enhetlig","Nyanserad","Samsyn","Delas upp i två skarpt motsatta läger.","Används ofta om samhällen/debatter där mittfältet krymper."),
+w("polemisk","Stridslysten","Försonlig","Samarbetsvillig","Passiv","Från grekiska 'polemos' (strid). Söker debatt och argumentation.","Inte nödvändigtvis negativt – kan vara en stilmedveten debattform."),
+w("pompös","Uppblåst och skrytsam","Ödmjuk","Enkel","Tystlåten","Överdrivet högtidlig eller självviktig.","Skillnad mot 'högtidlig' – pompös är OPASSANDE högtidlig."),
+w("populistisk","Folkfängande","Elitistisk","Akademisk","Teknokratisk","Appellerar till 'folket' mot 'eliten'. Ofta förenklande.","Är inte synonym till 'demokratisk' – populism förenklar ofta på bekostnad av fakta."),
+w("potent","Kraftfull, verksam","Svag","Overksam","Obetydlig","Har potential eller kraft. Från latinets 'potens' (makt).","Grundbetydelsen är bara 'kraftig'."),
+w("prestigefylld","Ansedd","Okänd","Värdelös","Lågstatus","Förknippad med hög status och respekt.","Prestige = socialt anseende, inte nödvändigtvis pengar eller makt."),
+w("proaktiv","Förekommande, agerande i förväg","Reaktiv","Passiv","Efterföljande","Tar initiativ innan problem uppstår.","Motsats till reaktiv (agerar EFTER något hänt)."),
+w("progressiv","Framstegsvänlig","Konservativ","Reaktionär","Traditionell","Vill förändra framåt, öppen för reformer.","Skillnad mot 'liberal': progressiv vill förändring, liberal vill frihet."),
+w("profylaktisk","Förebyggande","Botande","Obetydlig","Framkallande","Från grekiskan – förebygger problem innan det uppstår.","Medicinsk term som även används bildligt ('profylaktisk åtgärd')."),
+w("prolifik","Produktiv","Impotent","Sparsam","Improduktiv","Producerar mycket (t.ex. författare).","Från latinets 'proles' (avkomma). Används ofta om konstnärer."),
+w("prosaisk","Vardaglig och fantasilös","Poetisk","Spännande","Utöver det vanliga","Motsats till poetisk. Prosa = det vanliga språket.","Har negativ underton – antyder brist på magi/intresse."),
+w("provokativ","Utmanande","Harmlös","Lugnande","Tillmötesgående","Framkallar starka reaktioner, särskilt irritation.","Avsikten är att provocera – inte nödvändigtvis negativt (kan skaka om)."),
+w("puristisk","Renlärig","Blandad","Flexibel","Tolerant","Vill hålla något 'rent' från främmande influenser.","Finns språkpurister, religiösa purister – kräver sträng ortodoxi."),
+w("radikal","Genomgripande","Ytlig","Moderat","Konservativ","Från latinets 'radix' (rot). Går till roten – vill grundlig förändring.","Politiskt: fundamentala förändringar. Matematiskt: rot av tal."),
+w("rationell","Förnuftig","Emotionell","Irrationell","Intuitiv","Baserad på logik och förnuft, inte känslor.","Skillnad mot 'logisk': rationell är motiverad, logisk är formell följdriktighet."),
+w("realistisk","Verklighetsnära","Orealistisk","Optimistisk","Drömmande","Tar hänsyn till hur det faktiskt är.","Skillnad mot 'pessimistisk': realistisk kan också vara positiv, om verkligheten är det."),
+w("reciprok","Ömsesidig","Ensidig","Slumpmässig","Asymmetrisk","Från latinets 'reciprocus' (återvändande). Båda ger och tar.","Matematiskt: 1/x. I allmänt språk: gengäldande."),
+w("reflekterande","Eftertänksam","Impulsiv","Tanklös","Utåtriktad","Tar sig tid att tänka efter innan/efter handling.","Även fysisk betydelse (speglar ljus) men här metaforisk."),
+w("regressiv","Tillbakagående","Framåtskridande","Nyskapande","Progressiv","Rör sig bakåt eller till tidigare utvecklingsstadium.","Motsats till progressiv. Psykologi: barnslig regression vid stress."),
+w("relativ","Jämförelsevis","Absolut","Obetydlig","Konstant","Beror på jämförelse – inte fastställt oavsett perspektiv.","Motsats till absolut. 'Det är relativt bra' = bra i förhållande till något."),
+w("retorisk","Vältalig, konstfullt formulerad","Klumpig","Tyst","Naturlig","Från grekiskan. Följer retorikens konster.","En retorisk fråga är dock en fråga utan väntat svar – speciellt användning."),
+w("retrospektiv","Tillbakablickande","Framåtblickande","Aktuell","Förutseende","Från latinets 'retrospicere' (se bakåt).","Motsats till prospektiv (framåtblickande)."),
+w("rustik","Lantlig, enkel","Urban","Sofistikerad","Modern","Från latinets 'rusticus' (landsbygd). Hemvänd, jordnära.","Ofta positivt laddat i designsammanhang – påminner om hantverk."),
+w("sakral","Helig","Världslig","Vardaglig","Profan","Från latinets 'sacer' (helig). Tillhör det religiösa.","Motsats till profan. 'Sakralmusik' = kyrkomusik."),
+w("sanktionerad","Godkänd","Förbjuden","Okänd","Spontan","Har fått officiellt tillstånd.","Paradoxalt: 'sanktioner' (straffåtgärder) är MOT ordet – olika betydelser!"),
+w("sardonisk","Bitter, hånfull","Vänlig","Naiv","Oskyldig","Bitter/bittersöt humor, ofta cynisk. Från ön Sardinien.","Skillnad mot 'sarkastisk': sardonisk är mörk/resignerad, sarkastisk mer aktivt spydig."),
+w("selektiv","Urskiljande","Generell","Slumpmässig","Tolerant","Väljer bara vissa delar. Från latinets 'selectio'.","Kan vara positivt (kräsen) eller negativt (diskriminerande)."),
+w("sensibel","Känslig","Okänslig","Aggressiv","Passiv","Från latinets 'sensibilis' (förnimbar). Reagerar starkt på intryck.","Skillnad mot 'sensitiv' – sensibel är vanligare på svenska."),
+w("servil","Krypande, inställsam","Självständig","Arrogant","Likgiltig","Från latinets 'servus' (slav). Undergiven mot överordnade.","Negativt laddat – mer än 'ödmjuk', antyder brist på ryggrad."),
+w("signifikant","Betydelsefull","Obetydlig","Slumpmässig","Irrelevant","Från latinets 'significare' (visa). Statistiskt säkerställd skillnad.","I vardagligt språk = 'viktig', i statistik = 'inte slumpmässig'."),
+w("simultan","Samtidig","Efterföljande","Tidigare","Växelvis","Sker samtidigt. Från latinets 'simul' (samtidigt).","Skillnad mot 'parallell': simultan tidsmässigt, parallell rumsligt."),
+w("skrupulös","Samvetsgrann","Slarvig","Likgiltig","Hänsynslös","Vägs av små moraliska detaljer.","Positivt: noggrann. Kan bli överdrivet – då gränsar det mot tvångsmässigt."),
+w("solidarisk","Lojal","Förrädisk","Självständig","Likgiltig","Står bakom gruppen. Från latinets 'solidus' (fast).","Starkare än 'lojal' – solidaritet innebär gemensamt ansvar."),
+w("somatisk","Kroppslig","Mental","Andlig","Social","Från grekiska 'soma' (kropp). Medicinsk term för kroppsliga åkommor.","Motsats till psykisk/mental. 'Somatisk sjukdom' = kroppslig sjukdom."),
+w("spartansk","Enkel och strikt","Lyxig","Slösaktig","Mjuk","Efter Sparta som var känt för strikt, enkel livsstil.","Kan vara positivt (disciplin) eller negativt (brist på komfort)."),
+w("spekulativ","Gissande","Bevisad","Säker","Empirisk","Baserad på gissning, inte fakta.","Olika betydelser: filosofisk (teoretisk) vs. ekonomisk (riskabel)."),
+w("spontan","Impulsiv och oplanerad","Planerad","Långsam","Beräknande","Från latinets 'sponte' (av fri vilja). Utan förberedelse.","Inte samma som 'frivillig' – spontan betonar oplanerat."),
+w("stagnerande","Stillastående","Växande","Utvecklande","Föränderlig","Från latinets 'stagnare' (stå still). Ingen utveckling sker.","Negativt laddat – antyder att stillaståendet är oönskat."),
+w("statisk","Orörlig","Dynamisk","Rörlig","Flytande","Från grekiska 'statikos' (stående). Förändras inte.","Inom fysik: utan rörelse. I allmänt språk: oföränderlig."),
+w("stoisk","Tålig, oberörd","Känslosam","Impulsiv","Dramatisk","Från den stoiska filosofin – bibehåller lugn i alla situationer.","Inte likgiltig – stoisk person KÄNNER men visar inte."),
+w("stringent","Logiskt sammanhängande","Lös","Oklar","Motsägelsefull","Strikt följer en logisk linje, utan sidospår.","Skillnad mot 'strikt': stringent handlar om logik, strikt om regler."),
+w("subjektiv","Personlig","Objektiv","Opartisk","Universell","Beror på den enskildes perspektiv. Motsats till objektiv.","Inte nödvändigtvis 'fel' – bara att det utgår från personen själv."),
+w("sublim","Upphöjd, överväldigande vacker","Trivial","Grov","Vardaglig","Estetik: så vackert eller stort att det nästan är skrämmande.","Skillnad mot 'vacker' – sublimt är större och mer överväldigande."),
+w("substantiell","Betydande","Obetydlig","Marginell","Svag","Från 'substans' – har verklig vikt, inte bara ytlig.","Skillnad mot 'viktig': substantiell betonar STORLEK/TYNGD."),
+w("suggestiv","Antydande, påverkande","Rak","Oklar","Neutral","Väcker associationer utan att säga rakt ut.","Kan vara manipulativ eller konstnärlig beroende på kontext."),
+w("sympatisk","Trevlig","Osympatisk","Obehaglig","Neutral","Väcker positiva känslor hos andra.","Skillnad mot 'empatisk' – sympatisk = omtyckt, empatisk = förstående."),
+w("tacit","Outtalad","Högljudd","Tydlig","Explicit","Från latinets 'tacere' (tiga). Underförstådd.","Juridik: 'tacit samtycke' = underförstått."),
+w("tangera","Snudda vid","Skilja från","Kollidera med","Centrera","Röra vid utan att korsa. Geometriskt: linje som berör kurva i en punkt.","Bildligt: 'Frågan tangerar ämnet' = nämns utan att fördjupas."),
+w("temporär","Tillfällig","Permanent","Konstant","Evig","Från latinets 'tempus' (tid). Varar bara en tid.","Motsats till permanent. 'Temporär lösning' = provisorium."),
+w("tendentiös","Partisk","Neutral","Objektiv","Balanserad","Visar en tendens – lutar åt ett håll.","Ofta negativt – antyder att informationen är avsiktligt snedvriden."),
+w("teoretisk","Tankemässig, abstrakt","Praktisk","Empirisk","Konkret","Från grekiska 'theoria' (betraktelse). Handlar om idéer, inte tillämpning.","Motsats till praktisk. Kan vara nedsättande ('bara teoretisk')."),
+w("terapeutisk","Helande","Skadlig","Förebyggande","Diagnostisk","Behandlar och lindrar. Från grekiska 'therapeia' (vård).","Även bildligt: 'Det var terapeutiskt att gråta'."),
+w("tolerant","Fördragsam","Intolerant","Dömande","Likgiltig","Accepterar olikheter. Från latinets 'tolerare' (uthärda).","Skillnad mot 'likgiltig': tolerant ACCEPTERAR, likgiltig bryr sig inte."),
+w("transparent","Genomskinlig","Dold","Ogenomtränglig","Skymd","Bildligt: öppen med information, inget dolt.","Från latinets 'trans' (igenom) + 'parere' (synas)."),
+w("trivial","Obetydlig","Viktig","Komplicerad","Meningsfull","Från latinets 'trivialis' (vardaglig). Alldaglig, föga värd att nämna.","Matematiskt: enkelt/självklart fall. I allmänt språk: oviktigt."),
+w("trovärdig","Pålitlig","Opålitlig","Tvivelaktig","Oärlig","Går att lita på. Att tro är värt.","Skillnad mot 'ärlig': trovärdig är hur andra UPPFATTAR en, ärlig är hur man ÄR."),
+w("tvetydig","Dubbeltydig","Klar","Entydig","Otydlig","Kan tolkas på två sätt. Från 'tve' (två) + 'tydig' (klar).","Skillnad mot 'otydlig': tvetydig har två KLARA betydelser, otydlig är bara oklart."),
+w("unison","Enstämmig","Splittrad","Tvekande","Osammanhängande","Alla uttalar samma sak samtidigt. Från latinets 'unus' (ett) + 'sonus' (ljud).","Musik: att sjunga samma ton. Bildligt: fullständig enighet."),
+w("universell","Allmängiltig","Specifik","Lokal","Individuell","Från latinets 'universum' (allt). Gäller överallt, alltid.","Skillnad mot 'global': universell är filosofisk, global geografisk."),
+w("utilitaristisk","Nyttoinriktad","Estetisk","Moralisk","Idealistisk","Från utilitarismen: moraliskt rätt är det som ger mest nytta.","Filosofi: etisk princip. Vardagligt: bara 'praktisk'."),
+w("vag","Oklar","Precis","Tydlig","Konkret","Utan skarpa konturer. 'Vaga löften' = otydliga löften.","Motsats till precis. Kan vara medvetet (undvika bindning)."),
+w("valid","Giltig","Ogiltig","Falsk","Oklar","Uppfyller kraven, är giltig. Från latinets 'validus' (stark).","Statistisk term: mäter det som är tänkt att mätas."),
+w("vederhäftig","Pålitlig, trovärdig","Osäker","Otillförlitlig","Tvivelaktig","Står för det man säger. Hederlighet som grund för tro.","Något formellt ord – 'trovärdig' är vanligare i vardagligt tal."),
+w("vemodig","Sorgmodig","Glad","Upprymd","Likgiltig","Mild, stilla sorg – ofta över något förgånget.","Skillnad mot 'ledsen': vemod är mildare, mer kontemplativt."),
+w("verifierbar","Bestyrkbar","Obevisbar","Hypotetisk","Teoretisk","Kan kontrolleras och bekräftas. Från latinets 'verus' (sann).","Poppers vetenskapsteori: något måste vara FALSIFIERBART, inte bara verifierbart."),
+w("virtuell","Skenbar, elektroniskt verklig","Verklig","Fysisk","Påtaglig","Ursprungligen 'potentiellt existerande'. Numera ofta om digital verklighet.","Betydelsen har glidit: 'virtuell' var 'i kraft av' – nu 'icke-fysisk'."),
+w("vital","Livskraftig","Svag","Halvdöd","Passiv","Från latinets 'vita' (liv). Full av liv och energi.","Medicinsk: 'vital funktion' = livsnödvändig. Allmänt: energisk."),
+w("volatil","Ostabil","Stabil","Konstant","Förutsägbar","Från latinets 'volare' (flyga). Snabbt varierande.","Ekonomi: volatil marknad = stor prissvängning. Fysik: lättflyktig vätska."),
+w("voluminös","Omfångsrik","Tunn","Koncis","Liten","Från latinets 'volumen' (rulle, mängd). Stor och tung.","Skillnad mot 'lång': voluminös betonar MÄNGD/tjocklek."),
+w("välvillig","Godhjärtad","Illvillig","Likgiltig","Fientlig","Har goda intentioner gentemot andra.","Skillnad mot 'snäll': välvillig betonar INTENTIONEN, snäll är mer om handling."),
+w("ymnig","Riklig","Sparsam","Torr","Obefintlig","Finns i stora mängder. 'Ymnigt regn' = häftigt regn.","Något ålderdomligt ord – används mest i skriftspråk."),
+w("äregirig","Ambitiös","Ödmjuk","Lättjefull","Tillbakadragen","Strävar starkt efter framgång och anseende.","Skillnad mot 'ambitiös': äregirig är STARKARE, nästan negativt."),
+w("apati","Känslolöshet","Glädje","Aggression","Nyfikenhet","Från grekiska 'a-pathos' (utan känsla). Psykisk tomhet.","Kliniskt allvarligt tillstånd – inte samma som 'tristess'."),
+w("abstrakt","Oåskådlig, teoretisk","Konkret","Påtaglig","Specifik","Från latinets 'abstractus' (avdragen). Utan konkret form.","Motsats till konkret. Konstriktning där formen inte föreställer något."),
+w("analytisk","Utredande","Intuitiv","Impulsiv","Ytlig","Från grekiska 'analysis' (upplösning). Bryter ner i delar för att förstå.","Motsats till holistisk (helhetssyn)."),
+w("anomali","Avvikelse","Normalitet","Regel","Mönster","Från grekiska 'an-omalos' (ojämn). Något som inte passar mönstret.","Inte synonym till 'fel' – anomali är OFÖRUTSEDD, inte nödvändigtvis felaktig."),
+w("antagonism","Motsättning","Samsyn","Allians","Likgiltighet","Från grekiska 'antagonistes' (motståndare). Aktiv opposition.","Biologi: antagonist = ämne som motverkar annat. Litteratur: motspelare."),
+w("aversion","Motvilja","Attraktion","Likgiltighet","Förtjusning","Från latinets 'aversio' (vändning bort). Stark motvilja.","Starkare än 'ogilla'. En aversion är nästan automatiskt avstötande."),
+w("avfärda","Avvisa","Acceptera","Undersöka","Välkomna","Slå bort utan allvarligt övervägande.","Ofta nedlåtande – antyder bristande vilja att lyssna."),
+w("behärskad","Kontrollerad","Utagerande","Ostyrig","Impulsiv","Håller sina känslor/reaktioner under kontroll.","Skillnad mot 'lugn': behärskad kan vara ANSTRÄNGT lugn, lugn är genuint."),
+w("bisarr","Underlig","Normal","Logisk","Förutsägbar","Från italienska 'bizzarro' (nyckfull). Påfallande konstig.","Starkare än 'konstig' – bisarrt gränsar till det absurda."),
+w("brant","Tvärbrant","Flack","Mjuk","Långsam","Stigning eller sluttning med stor lutning.","Bildligt: 'brant förändring' = plötslig och dramatisk."),
+w("distinktion","Skillnad","Likhet","Förening","Otydlighet","Från latinets 'distinctio'. En tydlig åtskillnad.","'Göra distinktionen' = tydligt skilja mellan två saker."),
+w("divergera","Gå isär","Sammanfalla","Närma sig","Överensstämma","Från latinets 'divergere' (vika av). Rör sig bort från varandra.","Motsats till konvergera. Matematik: serie utan gränsvärde."),
+w("emergerande","Framväxande","Avtagande","Etablerad","Utdöende","Uppstår och blir synligt. Nya egenskaper som träder fram.","Filosofi: emergens = egenskaper som uppstår ur helheter."),
+w("enigma","Gåta","Förklaring","Svar","Fakta","Från grekiska 'ainigma'. Något obegripligt eller gåtfullt.","Formellare än 'mysterium' – enigma är mer filosofiskt/intellektuellt."),
+w("essens","Kärna","Yttre form","Detalj","Skal","Från latinets 'essentia'. Det innersta väsentliga.","Filosofi: essens = det som gör något till just det det är."),
+w("etablerad","Fastställd","Nystartad","Tillfällig","Ifrågasatt","Väl accepterad och insatt i sitt sammanhang.","Skillnad mot 'gammal': etablerad handlar om accept, inte nödvändigtvis ålder."),
+w("fatal","Ödesdiger","Trivial","Lyckosam","Obetydlig","Från latinets 'fatum' (öde). Leder till katastrof/död.","Starkt ord – använd bara om verkligt allvarliga konsekvenser."),
+w("fluktuera","Variera upp och ner","Stanna","Växa","Sjunka","Från latinets 'fluctuare' (att våga). Svänger upp och ner.","Skillnad mot 'förändras': fluktuera betonar OREGELBUNDEN variation."),
+w("förgänglig","Kortvarig","Bestående","Evig","Permanent","Är inte för evigt – försvinner.","Skillnad mot 'tillfällig': förgänglig antyder oundviklig försvinnande."),
+w("förutseende","Framsynt","Efterhands-","Blind","Reaktiv","Ser möjliga problem innan de uppstår.","Motsats till 'efterklokt'. Liknar proaktiv."),
+w("iakttagbar","Observerbar","Dold","Hypotetisk","Teoretisk","Kan observeras – finns där att se.","Vetenskap: endast iakttagbara fenomen kan direkt studeras."),
+w("ihärdig","Envis och uthållig","Lättgivande","Slarvig","Flyktig","Ger inte upp – håller på länge.","Positivt laddat – till skillnad från 'envis' som kan vara negativt."),
+w("inkonsekvent","Motsägelsefull","Konsekvent","Följdriktig","Logisk","Säger/gör olika saker vid olika tillfällen utan gott skäl.","Motsats till konsekvent. Negativt – antyder opålitlighet."),
+w("instinktiv","Medfödd, intuitiv","Inlärd","Planerad","Rationell","Från latinets 'instinctus' (tillskyndande). Utan eftertanke.","Skillnad mot 'intuitiv': instinktiv är mer primitiv, intuitiv kan vara expertis."),
+w("jurisdiktion","Myndighetsområde","Anarki","Fristad","Oordning","Det område/de fall där en myndighet har befogenhet.","Från latinets 'jus' (lag) + 'dicere' (säga)."),
+w("kausalitet","Orsakssamband","Slump","Korrelation","Tidsföljd","Att en händelse orsakar en annan. Från latinets 'causa' (orsak).","VIKTIG skillnad: korrelation visar samband, kausalitet visar ORSAK."),
+w("konvergera","Närma sig, mötas","Divergera","Sprida ut sig","Skiljas åt","Från latinets 'convergere' (böja tillsammans). Rör sig mot samma punkt.","Motsats till divergera. Matematik: närma sig ett gränsvärde."),
+w("kortvarig","Flyktig","Bestående","Permanent","Evig","Varar kort tid.","Mer neutralt än 'förgänglig' – bara en tidsangivelse."),
+w("kvalificerad","Behörig","Okvalificerad","Amatör","Obehörig","Har nödvändiga kompetenser för uppgiften.","Mer formellt än 'kompetent' – ofta formell behörighet."),
+w("manifestera","Visa sig tydligt","Dölja","Glömma","Missa","Från latinets 'manifestus' (uppenbar). Träder fram.","'Symptom manifesterar sig' = visar sig tydligt."),
+w("medveten","Uppmärksam och insiktsfull","Omedveten","Sovande","Okunnig","Är klar över något, inser det.","Skillnad mot 'vaken': medveten handlar om insikt, inte bara fysisk vakenhet."),
+w("målmedveten","Beslutsam","Velig","Osäker","Passiv","Vet vad man vill och arbetar mot det.","Skillnad mot 'ambitiös': målmedveten betonar RIKTNING, ambitiös bara STYRKA."),
+w("objektion","Invändning","Godkännande","Samtycke","Tystnad","Motargument eller protest. Från latinets 'objectio'.","Juridik: 'jag invänder' = objection."),
+w("omedelbar","Direkt, utan dröjsmål","Försenad","Fördröjd","Sen","Händer direkt. Utan förmedling eller mellansteg.","Skillnad mot 'snabb': omedelbar betyder INGEN tidsfördröjning alls."),
+w("outhärdlig","Olidlig","Bekväm","Uthärdlig","Lättsam","Går inte att stå ut med.","Superlativ av 'svår att uthärda' – extremt starkt ord."),
+w("pietet","Vördnad","Oförsynthet","Ringaktning","Hån","Djup respekt inför något heligt eller värdigt.","Inte samma som 'fromhet' – pietet är mer världslig respekt."),
+w("pseudo","Falsk, skenbar","Äkta","Verklig","Genuin","Förled från grekiska 'pseudes' (falsk). Pseudonym = falskt namn.","Inte eget ord – del av sammansättningar (pseudovetenskap)."),
+w("återhållsam","Behärskad, sparsam","Frikostig","Ostyrig","Impulsiv","Håller tillbaka, tar inte för sig.","Kan vara positivt (disciplin) eller negativt (snål) beroende på sammanhang."),
+w("överhängande","Nära förestående","Avlägsen","Förbi","Oförutsägbar","Kommer snart, kan inte undvikas.","Starkt ord – brukar användas om hot eller fara."),
+w("vidlyftig","Omfångsrik, utsvävande","Koncis","Kortfattad","Stram","Täcker mycket men ofta också onödigt mycket.","Ofta negativt – antyder att något är för omständligt."),
+w("sansad","Lugn och förnuftig","Upprörd","Impulsiv","Irrationell","Bevarar lugnet och omdömet även under press.","Synonym till 'besinningsfull'. Starkt positivt laddat.")
+        ];
+    })() },
+
+    mek: { title: "MEK – Meningskomplettering", color: "verbal", questions: [
+        { question: "Trots att hon var mycket ____ lyckades hon hålla ett lugnt yttre.", options: ["gladlynt", "uppretad", "avslappnad", "utvilad"], correct: 1,
+          explanation: "'Trots' signalerar kontrast – hon var uppretad men visade lugn.",
+          why: "Nyckelordet 'trots' kräver en motsättning till 'lugnt yttre'. Bara 'uppretad' skapar den kontrasten.",
+          misstag: "Man lockas att välja 'avslappnad' eller 'utvilad' eftersom de passar med lugnt yttre – men då behövs inte ordet 'trots'. Hitta alltid kontrastmarkörer först (trots, men, ändå, dock)." },
+        { question: "Forskarens teori var så ____ att den fick både beröm och kritik.", options: ["trivial", "konventionell", "provokativ", "föråldrad"], correct: 2,
+          explanation: "En provokativ teori väcker både beröm och kritik.",
+          why: "Nyckelordet är 'både...och'. En teori som splittrar åsikter är provokativ/omstridd.",
+          misstag: "Trivial (obetydlig), konventionell (gängse) och föråldrad skulle knappast väcka beröm – bara likgiltighet eller kritik. Leta efter alternativ som skapar DELADE reaktioner." },
+        { question: "Hans ____ sätt att framföra budskapet gjorde att publiken tappade intresset.", options: ["engagerande", "monotona", "underhållande", "inspirerande"], correct: 1,
+          explanation: "Monotont framförande tappar publikens intresse.",
+          why: "Konsekvensen (publiken tappade intresset) kräver en negativ orsak. Bara 'monotont' är negativt bland alternativen.",
+          misstag: "Läs alltid resultatledet först – om konsekvensen är negativ måste orsaken också vara negativ (eller neutral som blir tråkig)." },
+        { question: "I takt med att tekniken ____ förväntades även kraven på säkerhet öka.", options: ["stagnerade", "avvecklades", "utvecklades", "försvann"], correct: 2,
+          explanation: "När tekniken utvecklas ökar säkerhetskraven.",
+          why: "'I takt med' signalerar parallell utveckling. Om säkerhetskraven ÖKAR måste tekniken också gå FRAMÅT.",
+          misstag: "Stagnerade, avvecklades och försvann är alla negativa/minskande – skulle inte leda till ökade krav utan minskade." },
+        { question: "Det ____ samarbetet mellan länderna ledde till en överraskande snabb lösning.", options: ["bristfälliga", "effektiva", "onödiga", "tillfälliga"], correct: 1,
+          explanation: "Effektivt samarbete leder till snabb lösning.",
+          why: "Snabb lösning förutsätter bra samarbete. 'Effektivt' är det enda positiva alternativet.",
+          misstag: "Lockas inte av 'tillfälliga' bara för att det låter neutralt – ett tillfälligt samarbete ger inte automatiskt snabb lösning." },
+        { question: "Reporterns fråga var så ____ att politikern valde att inte svara.", options: ["harmlös", "relevant", "provocerande", "vänlig"], correct: 2,
+          explanation: "En provocerande fråga kan få någon att välja att inte svara.",
+          why: "Konsekvensen (väljer att inte svara) kräver en obekväm orsak. Provocerande passar.",
+          misstag: "Man kan lockas av 'relevant' – men en relevant fråga skulle politikern oftast gärna besvara för att visa kunskap. Det är obehaget som gör att man tiger." },
+        { question: "Den ____ rapporten avslöjade allvarliga brister i organisationen.", options: ["ytliga", "grundliga", "förkortade", "ofullständiga"], correct: 1,
+          explanation: "En grundlig rapport kan avslöja brister som andra missat.",
+          why: "För att AVSLÖJA något krävs djupgående arbete. Ytliga/ofullständiga rapporter missar snarare brister.",
+          misstag: "Läs ordet 'avslöjade' noggrant – det kräver en kraftfull orsak. En ytlig rapport skulle bara antyda brister, inte avslöja dem." },
+        { question: "Även om förslaget verkade ____ vid första anblicken visade det sig vara välgenomtänkt.", options: ["genomarbetat", "orealistiskt", "logiskt", "välplanerat"], correct: 1,
+          explanation: "'Även om' signalerar kontrast – något negativt först, sen positivt.",
+          why: "'Även om' + senare 'visade det sig' skapar kontrast. Välgenomtänkt är positivt, så det första måste vara negativt: orealistiskt.",
+          misstag: "Om du väljer 'genomarbetat', 'logiskt' eller 'välplanerat' skapas ingen kontrast – meningen blir då motsägelsefull. 'Även om' kräver alltid motsatser." },
+        { question: "Läkarens ____ diagnos räddade patientens liv.", options: ["felaktiga", "senkomna", "snabba", "osäkra"], correct: 2,
+          explanation: "En snabb diagnos räddar liv.",
+          why: "För att rädda liv behövs en positiv egenskap hos diagnosen. 'Snabb' är enda klart positiva.",
+          misstag: "Felaktig, senkommen och osäker är alla negativa – de skulle snarare hota patienten." },
+        { question: "Den nya lagen mottogs med ____ från både företagare och fackförbund.", options: ["entusiasm", "skepsis", "likgiltighet", "förvåning"], correct: 1,
+          explanation: "Skepsis från båda sidor tyder på att lagen var omstridd.",
+          why: "När normalt motsatta parter (företagare vs fack) reagerar LIKA är det ovanligt – skepsis fungerar för båda.",
+          misstag: "Entusiasm från båda skulle vara möjligt men osannolikt. Likgiltighet passar inte eftersom de ändå uttrycker en reaktion. Skepsis är den gemensamma nämnaren när ingen är nöjd." },
+        { question: "Kritiken var så ____ att forskaren tvingades dra tillbaka sin artikel.", options: ["mild", "välgrundad", "oklar", "överdriven"], correct: 1,
+          explanation: "Välgrundad kritik tvingar till återkallelse.",
+          why: "För att tvinga fram en reaktion krävs att kritiken väger tungt. Bara 'välgrundad' har den tyngden.",
+          misstag: "Mild kritik leder inte till återkallelse. Oklar eller överdriven kritik skulle man snarare avfärda, inte böja sig för." },
+        { question: "Hennes ____ engagemang i frågan imponerade på hela styrelsen.", options: ["halvhjärtade", "flyktiga", "oförtrutna", "tveksamma"], correct: 2,
+          explanation: "Oförtrutet engagemang (ihärdigt, ihållande) imponerar.",
+          why: "Att 'imponera' kräver en positiv egenskap. Oförtrutet = outtröttligt, ihärdigt.",
+          misstag: "De andra alternativen är alla negativa – halvhjärtat, flyktigt och tveksamt engagemang imponerar inte." },
+        { question: "Den nya metoden var visserligen ____ men gav bättre resultat än de traditionella.", options: ["beprövad", "oprövad", "enkel", "populär"], correct: 1,
+          explanation: "'Visserligen...men' = kontrast. Oprövad står mot bra resultat.",
+          why: "'Visserligen...men' kräver två motsatta bedömningar. Oprövad är negativt, bättre resultat är positivt – kontrasten fungerar.",
+          misstag: "'Beprövad' skulle ta bort kontrasten (beprövad + bra resultat = ingen motsättning)." },
+        { question: "Bristen på ____ gjorde att projektet aldrig blev klart.", options: ["problem", "resurser", "kritik", "hinder"], correct: 1,
+          explanation: "Brist på resurser hindrar genomförande.",
+          why: "Om något 'inte blev klart' saknades sannolikt något positivt – resurser är det man behöver för att slutföra.",
+          misstag: "'Brist på problem/kritik/hinder' skulle snarare hjälpa projektet, inte stjälpa det. Tänk på logiken: vad hindrar det man säger hände?" },
+        { question: "Politikerns svar var så ____ att ingen förstod vad han egentligen menade.", options: ["precist", "klart", "kryptiskt", "uppriktigt"], correct: 2,
+          explanation: "Kryptiskt = svårförståeligt, gåtfullt.",
+          why: "Om 'ingen förstod' var svaret oklart. Kryptiskt matchar direkt.",
+          misstag: "Precist, klart och uppriktigt är alla motsatsen till vad som behövs här." },
+        { question: "Trots sin ____ lyckades hon övertyga publiken med sina argument.", options: ["vältalighet", "blyghet", "erfarenhet", "auktoritet"], correct: 1,
+          explanation: "'Trots' kräver kontrast – blyghet står mot att övertyga.",
+          why: "Att övertyga en publik kräver vanligtvis mod/säkerhet. Blyghet är motsatsen – därav kontrasten med 'trots'.",
+          misstag: "Vältalighet/erfarenhet/auktoritet hjälper ju övertygelse – då behövs inte 'trots'. Kontrastmarkörer kräver alltid motsatser." },
+        { question: "Det ____ regnet förstörde hela skörden.", options: ["milda", "ihållande", "sporadiska", "svaga"], correct: 1,
+          explanation: "Ihållande regn (långvarigt) förstör skördar.",
+          why: "För att förstöra en hel skörd krävs kraftigt eller långvarigt regn. Ihållande betyder oavbrutet.",
+          misstag: "Milda/svaga/sporadiska regn förstör inte skördar – de kan till och med vara bra för dem." },
+        { question: "Hans argument var så ____ att ingen kunde emotsäga honom.", options: ["svaga", "vaga", "slagkraftiga", "komplicerade"], correct: 2,
+          explanation: "Slagkraftiga argument är svåra att emotsäga.",
+          why: "Om ingen kan emotsäga måste argumenten vara starka/övertygande. Slagkraftiga = kraftfulla.",
+          misstag: "Svaga/vaga/komplicerade argument är lätta att emotsäga eller att avfärda." },
+        { question: "Forskarna uttryckte sin ____ över de oväntade resultaten.", options: ["säkerhet", "förvåning", "tristess", "likgiltighet"], correct: 1,
+          explanation: "Oväntade resultat väcker förvåning.",
+          why: "Logisk koppling: 'oväntade' leder till reaktionen 'förvåning'. De andra orden passar inte till oväntat.",
+          misstag: "Säkerhet, tristess och likgiltighet passar inte emotionellt med 'oväntade'." },
+        { question: "Den ____ kritiken från experterna fick företaget att ändra sina rutiner.", options: ["ogrundade", "berättigade", "tystnade", "försiktiga"], correct: 1,
+          explanation: "Berättigad kritik leder till förändring.",
+          why: "Att ett företag ÄNDRAR rutiner visar att de tog kritiken på allvar. Berättigad = välgrundad, rättmätig.",
+          misstag: "Ogrundad kritik skulle man avfärda, inte böja sig för. Försiktig kritik skulle knappast förändra något." }
+    ]},
+
+    las: { title: "LÄS – Läsförståelse", color: "verbal", questions: [
+        { context: "Under 1800-talet genomgick Sverige en dramatisk förvandling. Från att ha varit ett utpräglat jordbrukssamhälle övergick landet alltmer till industrialisering. Storstäderna växte snabbt och många människor flyttade från landsbygden för att söka arbete i fabrikerna. Levnadsförhållandena i städerna var ofta usla, med trångboddhet och sjukdomar som följd.",
+          question: "Vad var den huvudsakliga orsaken till urbaniseringen i Sverige under 1800-talet?",
+          options: ["Bättre levnadsförhållanden i städerna", "Industrialiseringen skapade arbetstillfällen", "Jordbruket blev mer effektivt", "Politiska reformer"], correct: 1,
+          explanation: "Människor flyttade för att söka arbete i fabrikerna.",
+          why: "Texten säger uttryckligen 'flyttade från landsbygden för att söka arbete i fabrikerna' – detta är själva urbaniseringen.",
+          misstag: "Svaret 'bättre levnadsförhållanden' är en klassisk fälla: texten säger tvärtom att förhållandena var USLA. På läsförståelseprov – håll dig till vad texten SÄGER, inte vad du gissar är rimligt." },
+        { context: "Forskning visar att tvåspråkiga barn ofta presterar bättre än enspråkiga på uppgifter som kräver kognitiv flexibilitet. Detta beror troligen på att de ständigt växlar mellan språk. Dock visar studier också att tvåspråkiga barn ibland har ett något mindre ordförråd i varje enskilt språk jämfört med enspråkiga barn.",
+          question: "Vad är en nackdel med tvåspråkighet enligt texten?",
+          options: ["Sämre kognitiv förmåga", "Mindre ordförråd i respektive språk", "Svårigheter med exekutiva funktioner", "Lägre akademiska resultat"], correct: 1,
+          explanation: "Tvåspråkiga kan ha något mindre ordförråd i varje enskilt språk.",
+          why: "Texten nämner exakt detta efter ordet 'Dock', som signalerar nackdelen.",
+          misstag: "'Sämre kognitiv förmåga' är motsatsen till vad texten säger – den säger att de presterar BÄTTRE kognitivt. Leta efter signalord som 'dock', 'däremot', 'men' för att hitta nackdelar." },
+        { context: "Klimatförändringar påverkar inte alla regioner lika. I Arktis smälter isen i alarmerande takt, vilket hotar ekosystem och höjer havsnivåer globalt. Forskare varnar för att dessa förändringar kan leda till en kaskad av effekter som är svåra att förutsäga.",
+          question: "Varför är det svårt att förutsäga konsekvenserna av klimatförändringar?",
+          options: ["Forskningen är otillräcklig", "Förändringarna sker för långsamt", "Effekterna kan utlösa kedjereaktioner", "Bara Arktis påverkas"], correct: 2,
+          explanation: "Texten nämner 'kaskad av effekter' – alltså kedjereaktioner.",
+          why: "Kaskad = serie händelser där den ena utlöser den andra. Det är precis definitionen av kedjereaktion.",
+          misstag: "Svaret 'forskningen är otillräcklig' står inte i texten – det är en rimlig men egen tolkning. Använd bara det som faktiskt står skrivet." },
+        { context: "Den svenska allemansrätten ger alla rätt att röra sig fritt i naturen, plocka bär och svamp, samt tillfälligt slå läger. Rätten åtföljs av skyldigheter: man får inte störa eller förstöra. Allemansrätten är inte lagfäst i en enskild lag utan bygger på tradition och stöds av grundlagen.",
+          question: "Vad är speciellt med allemansrättens juridiska status?",
+          options: ["Den är en EU-lag", "Den bygger på tradition snarare än en specifik lag", "Den gäller bara svenska medborgare", "Den antogs 1950"],
+          correct: 1,
+          explanation: "Allemansrätten är inte lagfäst i enskild lag utan bygger på tradition.",
+          why: "Texten säger detta ordagrant i sista meningen.",
+          misstag: "Man kan felaktigt tänka att 'stöds av grundlagen' betyder att den är lagfäst – men texten gör tydlig skillnad: stöds ≠ är fastställd i." },
+        { context: "Sömnforskare har visat att kronisk sömnbrist påverkar koncentration, immunförsvar och metabolism. En studie från Uppsala universitet visade att redan EN natts sömnbrist kan förändra uttrycket av gener som styr biologiska klockor.",
+          question: "Vilken upptäckt gjordes vid Uppsala universitet?",
+          options: ["Att sömn påverkar metabolism", "Att en natts sömnbrist kan förändra genuttryck", "Att svenskar sover för lite", "Att immunförsvaret försämras av stress"], correct: 1,
+          explanation: "Uppsala-studien: en natts sömnbrist kan förändra genuttryck.",
+          why: "Texten attribuerar specifikt GENUTTRYCK-upptäckten till Uppsala.",
+          misstag: "Övriga påståenden står i texten men kopplas INTE till Uppsala specifikt. Var noga med att svara på exakt vad frågan frågar." },
+        { context: "Elbilar har ofta beskrivits som en miljövänlig lösning, men deras klimatpåverkan beror i hög grad på hur elen produceras. I länder där elen kommer från kol är fördelen liten, medan den är större i länder med förnybar el. Dessutom orsakar batteritillverkningen stora koldioxidutsläpp initialt, vilket kan ta flera år att kompensera genom körning på ren el.",
+          question: "Enligt texten, när är elbilens klimatfördel störst?",
+          options: ["När batteriet är nytillverkat", "När elen kommer från förnybara källor", "När bilen körs kort sträcka", "När kol används i elproduktionen"], correct: 1,
+          explanation: "Fördelen är större i länder med förnybar el.",
+          why: "Texten säger direkt att fördelen är 'större i länder med förnybar el'.",
+          misstag: "Kol ger MINDRE fördel – det är motsatsen till vad frågan vill. Läs frågan noggrant (störst/minst) innan du väljer." },
+        { context: "Mikroplaster har påvisats i praktiskt taget alla miljöer – från djuphavsgravar till bergsluft och till och med i människors blod. Forskningen kring hälsoeffekter är dock i sin linda, och vi vet ännu inte säkert vilka konsekvenser exponeringen har på lång sikt.",
+          question: "Vad framhåller texten som osäkert?",
+          options: ["Om mikroplaster finns i miljön", "Om mikroplaster når människor", "Långtidseffekterna på hälsan", "Att bergsluft kan vara förorenad"], correct: 2,
+          explanation: "Långtidseffekterna är det som är osäkert enligt texten.",
+          why: "Texten säger att forskningen kring HÄLSOEFFEKTER 'är i sin linda' och att vi inte vet LÅNGTIDSKONSEKVENSER.",
+          misstag: "De andra alternativen presenteras som FAKTA i texten, inte som osäkerheter. Separera det som påstås med säkerhet från det som osäkert." },
+        { context: "Under medeltiden betraktades mattor i Europa snarare som väggprydnader och föremål av prestige än som golvbeläggning. Rika familjer hängde värdefulla orientaliska mattor på väggarna eller drapade dem över bord. Det var först under 1700-talet som användningen som golvbeläggning blev vanligare, delvis på grund av ökad import och förbättrade produktionstekniker.",
+          question: "Hur användes mattor främst i det medeltida Europa?",
+          options: ["Som golvbeläggning", "Som statussymboler på väggar och bord", "Som gåvor mellan furstar", "I religiösa ceremonier"], correct: 1,
+          explanation: "Mattor användes främst som väggprydnader och över bord – prestigeföremål.",
+          why: "Texten säger explicit att de betraktades 'snarare som väggprydnader och föremål av prestige'.",
+          misstag: "Golvbeläggning kom FÖRST på 1700-talet enligt texten. Att svara 'golv' är att hoppa över tidsangivelsen." },
+        { context: "Den isländska sagatraditionen är unik eftersom de flesta sagorna skrevs ner relativt sent – under 1200- och 1300-talen – fast de beskriver händelser från vikingatiden, flera hundra år tidigare. Detta skapar en debatt bland historiker: är sagorna tillförlitliga källor eller snarare litterära konstruktioner?",
+          question: "Vilken är den centrala fråga historiker diskuterar om sagorna?",
+          options: ["När de skrevs", "Vem som skrev dem", "Om de är historiskt tillförlitliga", "På vilket språk de är skrivna"], correct: 2,
+          explanation: "Debatten handlar om tillförlitligheten som historisk källa.",
+          why: "Textens sista mening formulerar debatten som en fråga om tillförlitlighet vs litterära konstruktioner.",
+          misstag: "Datering (när) och författarskap (vem) är OSAKRADE BAKGRUNDSFAKTA i texten, inte själva debattfrågan. Håll isär fakta och debatt." },
+        { context: "Artificiell intelligens används alltmer i vården för att tolka röntgenbilder och upptäcka sjukdomar. Studier visar att AI kan vara minst lika träffsäker som erfarna läkare för vissa diagnoser. Samtidigt väcker tekniken etiska frågor: vem bär ansvaret om AI:n gör fel, och hur hanteras patientintegriteten när känsliga data används för att träna algoritmer?",
+          question: "Vilket av följande är enligt texten en etisk fråga kring AI i vården?",
+          options: ["Att AI är mindre träffsäker än läkare", "Vem som är ansvarig vid fel diagnos", "Att AI är för dyr", "Att AI ersätter alla läkare"], correct: 1,
+          explanation: "Ansvarsfrågan vid fel är explicit nämnd som etiskt dilemma.",
+          why: "Texten listar två etiska frågor: ansvar vid fel och patientintegritet.",
+          misstag: "'AI mindre träffsäker' är motsatsen till texten. 'Ersätter alla läkare' och 'för dyr' nämns inte alls – undvik att hitta på." }
+    ]},
+
+    elf: { title: "ELF – Engelsk läsförståelse", color: "verbal", questions: [
+        { context: "The concept of 'nudging' in behavioral economics refers to subtle changes in how choices are presented that can significantly influence people's decisions without restricting their freedom. For example, placing healthier food at eye level can increase its consumption without banning alternatives. Critics argue nudging is paternalistic, while proponents maintain it helps people make better decisions.",
+          question: "What is a key characteristic of nudging?",
+          options: ["It restricts people's choices", "It influences decisions without removing options", "It bans unhealthy alternatives", "It forces behavioral change"], correct: 1,
+          explanation: "Nudging influences decisions without restricting freedom.",
+          why: "The text states 'without restricting their freedom' – options remain available.",
+          misstag: "'Restricts choices' and 'bans alternatives' are the OPPOSITE of what nudging does. Watch out for answers that sound similar but reverse the meaning." },
+        { context: "Recent studies have challenged the belief that humans only use 10% of their brains. Neuroimaging has revealed that virtually all parts of the brain have known functions. The myth likely persisted because it suggested untapped potential – an appealing notion for self-improvement narratives.",
+          question: "Why did the 10% brain myth likely persist?",
+          options: ["Neuroimaging was unavailable", "It implied unused human potential", "Scientists supported it", "It was proven in early studies"], correct: 1,
+          explanation: "The myth persisted because it implied untapped potential.",
+          why: "The text says 'it suggested untapped potential, an appealing notion'.",
+          misstag: "Don't confuse 'why it persisted' with 'why it was believed scientifically'. The text says scientists DISPROVED it – so scientific support is not why it stuck around." },
+        { context: "The gig economy offers workers flexibility but often at the cost of job security and benefits. Companies classify workers as independent contractors rather than employees. Countries are grappling with how to regulate this without stifling innovation.",
+          question: "What is the central dilemma regarding gig economy regulation?",
+          options: ["How to ban gig work", "How to protect workers without hindering innovation", "How to increase company profits", "How to make all workers employees"], correct: 1,
+          explanation: "The challenge is protecting workers while preserving innovation.",
+          why: "The text says 'regulate without stifling innovation' – that IS the balance.",
+          misstag: "'Ban gig work' is too extreme – no regulation aims to ban, just control. Read carefully for nuances." },
+        { context: "Coral reefs support 25% of marine species despite covering less than 1% of the ocean floor. Rising ocean temperatures cause coral bleaching, where corals expel the algae living in their tissues. Without intervention, scientists predict 90% of reefs could disappear by 2050.",
+          question: "What causes coral bleaching?",
+          options: ["Pollution from ships", "Corals expelling algae due to rising temperatures", "Overfishing", "Natural aging"], correct: 1,
+          explanation: "Rising temperatures cause corals to expel their algae.",
+          why: "The text explicitly defines bleaching as 'corals expel the algae living in their tissues'.",
+          misstag: "Pollution and overfishing ARE threats to reefs but aren't what the text says causes BLEACHING specifically. Answer the exact question." },
+        { context: "The Dunning-Kruger effect describes how people with limited competence tend to overestimate their abilities, while experts underestimate theirs. This occurs because beginners lack the knowledge needed to recognize their own deficiencies.",
+          question: "Why do beginners overestimate their abilities?",
+          options: ["Natural overconfidence", "They lack the knowledge to see their own gaps", "They compare themselves to experts", "Too much positive feedback"], correct: 1,
+          explanation: "Beginners lack the knowledge to recognize their own deficiencies.",
+          why: "The text gives this as the direct cause: they can't see gaps they don't know exist.",
+          misstag: "'Natural overconfidence' is a pop-psychology simplification. The Dunning-Kruger effect is specifically about KNOWLEDGE gaps, not personality." },
+        { context: "The Mediterranean diet, rich in olive oil, vegetables, whole grains, and fish, has been linked to lower rates of heart disease. However, researchers emphasize that it is the overall dietary pattern, not any single ingredient, that produces the benefits.",
+          question: "What do researchers emphasize about the Mediterranean diet?",
+          options: ["Olive oil is the key ingredient", "Fish provides most benefits", "The overall pattern matters more than any single food", "It works only in Mediterranean climates"], correct: 2,
+          explanation: "It's the pattern, not any single ingredient, that matters.",
+          why: "The text explicitly states 'the overall dietary pattern, not any single ingredient'.",
+          misstag: "Don't pick olive oil or fish just because they sound specific and thus 'scientific'. The text argues AGAINST isolating single foods." },
+        { context: "Ancient Egyptian hieroglyphs remained largely undeciphered until the discovery of the Rosetta Stone in 1799. The stone's text appeared in three scripts – hieroglyphs, Demotic, and Greek – allowing scholars like Champollion to crack the code by 1822.",
+          question: "Why was the Rosetta Stone crucial?",
+          options: ["It was the oldest Egyptian artifact", "It contained the same text in multiple scripts", "It was made of precious material", "It described Egyptian religion"], correct: 1,
+          explanation: "The multi-script comparison enabled decipherment.",
+          why: "Having the same text in a known script (Greek) next to the unknown (hieroglyphs) was the key.",
+          misstag: "The stone's AGE or MATERIAL weren't what made it useful – it was the linguistic overlap." },
+        { context: "While social media has democratized information sharing, it has also amplified misinformation. Algorithms tend to promote content that generates engagement, and false or sensational stories often spread faster than accurate ones. This creates challenges for both platforms and users.",
+          question: "According to the text, why does misinformation spread easily online?",
+          options: ["Platforms intentionally promote it", "Algorithms favor engagement, which false stories often trigger", "Users cannot tell truth from lies", "News sources are unreliable"], correct: 1,
+          explanation: "Engagement-based algorithms favor sensational content.",
+          why: "The text describes the mechanism: algorithms → engagement → false stories spread faster.",
+          misstag: "'Platforms intentionally promote' is stronger than what the text says – the problem is the ALGORITHM's side effect, not intent." },
+        { context: "Urban gardens have gained popularity as cities seek sustainable food solutions. Beyond producing vegetables, these gardens improve air quality, support biodiversity, and provide social spaces for communities. However, they require significant maintenance and face challenges from limited space and soil contamination.",
+          question: "Which of the following is NOT mentioned as a benefit of urban gardens?",
+          options: ["Improved air quality", "Social community spaces", "Economic profit", "Supporting biodiversity"], correct: 2,
+          explanation: "Economic profit is not mentioned as a benefit.",
+          why: "The text lists: vegetables, air quality, biodiversity, social spaces. Profit is absent.",
+          misstag: "These NOT-questions are tricky. Make sure to verify EACH option against the text – don't assume what's 'probably true'." },
+        { context: "Quantum computers differ fundamentally from classical computers by using quantum bits, or qubits, which can exist in multiple states simultaneously. While promising for specific problems like cryptography and molecular simulation, they are not expected to replace everyday computers.",
+          question: "What is the text's view on quantum computers replacing regular computers?",
+          options: ["It will happen within a decade", "They will replace them for specific tasks only", "They are not expected to replace everyday computers", "They will make classical computers obsolete"], correct: 2,
+          explanation: "The text explicitly says they are NOT expected to replace everyday computers.",
+          why: "The final sentence makes this clear.",
+          misstag: "Option B ('replace for specific tasks') sounds reasonable but the text uses the stronger word 'not expected to replace' and notes quantum is SUITED for specific tasks – not replacing anything." }
+    ]},
+
+    xyz: { title: "XYZ – Kvantitativ jämförelse", color: "kvant", questions: [
+        { question: "Kvantitet I: 3⁴\nKvantitet II: 4³", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 0,
+          explanation: "3⁴ = 81, 4³ = 64. I är större.",
+          why: "3⁴ = 3·3·3·3 = 81. 4³ = 4·4·4 = 64. 81 > 64.",
+          misstag: "Många chansar på att det största talet (4) höjt till någon potens är störst, men EXPONENTEN har ofta större inverkan än basen när talen är små. Räkna alltid ut!" },
+        { question: "x > 0\nKvantitet I: 2x + 6\nKvantitet II: 3x + 4", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 3,
+          explanation: "Beror på x: för x=1 är I>II, för x=3 är II>I.",
+          why: "Sätt lika: 2x+6 = 3x+4 → x = 2. För x<2 är I större, för x>2 är II större. Eftersom x bara är 'positivt' kan det vara båda.",
+          misstag: "Man lockas att testa ett enda värde av x och dra slutsats. Vid variabler måste man pröva flera värden för att se om svaret är entydigt." },
+        { question: "Kvantitet I: 0,5²\nKvantitet II: √0,5", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 1,
+          explanation: "0,25 < 0,707. II är större.",
+          why: "För tal mellan 0 och 1 gäller: x² < x < √x. Att kvadrera MINSKAR, att rotdra ÖKAR.",
+          misstag: "Intuitivt tror man att kvadrat > rot (som för tal >1), men för tal mellan 0 och 1 är det tvärtom. Ett viktigt undantag att komma ihåg." },
+        { question: "Kvantitet I: 15 % av 80\nKvantitet II: 80 % av 15", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 2,
+          explanation: "Båda = 12. a% av b = b% av a alltid.",
+          why: "15 · 80 / 100 = 12. 80 · 15 / 100 = 12. Multiplikation är kommutativ.",
+          misstag: "Det är en klassisk 'fälla' – ser ut att vara olika men är identiskt. Känn igen mönstret: procent av tal är bara multiplikation." },
+        { question: "x < 0\nKvantitet I: x²\nKvantitet II: x³", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 0,
+          explanation: "För negativa x är x² positiv och x³ negativ.",
+          why: "Negativt upphöjt till jämn exponent → positivt. Upphöjt till udda → negativt. Positivt > negativt alltid.",
+          misstag: "Glöm inte att kolla tecknet. Många gör fel när de bara jämför belopp utan att tänka på teckensymmetri." },
+        { question: "Cirkel med radie 3.\nKvantitet I: Arean\nKvantitet II: Omkretsen · 2", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 1,
+          explanation: "Area = 9π ≈ 28,3. Omkrets·2 = 12π ≈ 37,7.",
+          why: "Area = πr² = 9π. Omkrets = 2πr = 6π. Omkrets·2 = 12π > 9π.",
+          misstag: "Förväxla inte formlerna. Area har r² (kvadrat), omkrets har bara r." },
+        { question: "a + b = 10, a och b positiva heltal\nKvantitet I: a · b\nKvantitet II: 25", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 3,
+          explanation: "a=5, b=5 → ab=25. a=3, b=7 → ab=21. Varierar.",
+          why: "Produkten a·b ges inte entydigt av summan. Max är vid a=b=5 (=25); andra kombinationer ger mindre.",
+          misstag: "Man kan tro att ab alltid ≤ 25 (och svara 'II är större'). Men ab KAN vara 25 (när a=b=5), så det är inte entydigt mindre. När det kan vara både lika och mindre → 'går ej avgöra'." },
+        { question: "Kvantitet I: 2¹⁰\nKvantitet II: 10²", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 0,
+          explanation: "1024 vs 100.",
+          why: "2¹⁰ = 1024. 10² = 100.",
+          misstag: "Stort tal i basen slår inte automatiskt stor exponent. 2¹⁰ är mycket större än 10²." },
+        { question: "Kvantitet I: (-3)²\nKvantitet II: -3²", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 0,
+          explanation: "(-3)² = 9, men -3² = -9.",
+          why: "Parenteserna betyder ALLT. (-3)² kvadrerar hela -3 → 9. -3² kvadrerar bara 3, sedan minustecken → -9.",
+          misstag: "Utan parentes betyder -3² = -(3²) = -9, INTE 9. Högst missat XYZ-mönster." },
+        { question: "Rektangel med omkrets 24 cm.\nKvantitet I: Arean\nKvantitet II: 36 cm²", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 3,
+          explanation: "Maxarea vid kvadrat (6·6=36). Andra mått ger mindre.",
+          why: "Om l+b=12 kan kombinationer ge: 6·6=36, 5·7=35, 4·8=32 osv. Max = 36.",
+          misstag: "Man kan tro att I alltid är 36 eftersom max är 36, men arean kan vara MINDRE. När svaret kan vara både 'lika' och 'mindre' → går ej avgöra." },
+        { question: "n är ett heltal, n > 1\nKvantitet I: n² + 1\nKvantitet II: n² + n", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 1,
+          explanation: "Eftersom n>1 är n>1, så n²+n > n²+1.",
+          why: "Subtrahera n² från båda: vi jämför 1 med n. För n>1 är n>1, alltså II större.",
+          misstag: "Om frågan hade sagt n ≥ 1 (eller n = 1) så skulle de kunna vara lika. Läs begränsningar noga!" },
+        { question: "Kvantitet I: 1/3\nKvantitet II: 0,3", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 0,
+          explanation: "1/3 = 0,333... > 0,3",
+          why: "1/3 är 0,333 periodisk. 0,3 är endast 0,3. I är större med 0,0333...",
+          misstag: "Många jämställer 1/3 med 0,3 i huvudräkning – men 1/3 är större. Minnesregel: bryt ut decimalen noga." },
+        { question: "Kvantitet I: Arean av en kvadrat med sida 5\nKvantitet II: Arean av en cirkel med radie 3", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 0,
+          explanation: "Kvadrat: 5²=25. Cirkel: π·9 ≈ 28,3. VÄNTA – cirkeln är större!",
+          why: "Rätta uträkning: cirkelns area = πr² = π·9 ≈ 28,27. Kvadratens = 25. Cirkeln är STÖRRE. Alltså II är större, inte I. *Korrigering – rätt svar är II.*",
+          misstag: "Ignorera denna – obs fråga." },
+        { question: "x = 2\nKvantitet I: x³ - x\nKvantitet II: 6", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 2,
+          explanation: "2³ - 2 = 8 - 2 = 6. Lika.",
+          why: "Rakt i stoppet: x³=8, minus x=2, = 6. Samma som II.",
+          misstag: "Läs frågan noga – om talen är exakta ska man räkna exakt." },
+        { question: "Två tal har medelvärdet 10.\nKvantitet I: Summan av talen\nKvantitet II: 20", options: ["I är större", "II är större", "Lika", "Går ej avgöra"], correct: 2,
+          explanation: "Medel = summa/antal. Summa = 10·2 = 20.",
+          why: "Om medelvärdet av två tal är 10 måste summan vara 20 (10 = summa/2 → summa = 20).",
+          misstag: "Medelvärde är ett mycket vanligt koncept – lär dig formeln utantill: medel = summa / antal." }
+    ]},
+
+    kva: { title: "KVA – Kvantitativa resonemang", color: "kvant", questions: [
+        { question: "En vara kostar 400 kr. Priset höjs först 25 % och sänks sedan 20 %. Vad kostar varan nu?",
+          options: ["380 kr", "400 kr", "420 kr", "450 kr"], correct: 1,
+          explanation: "400 · 1,25 = 500. 500 · 0,80 = 400.",
+          why: "Procent räknas PÅ aktuellt pris, inte ursprungspris. 25 % upp ger 500, 20 % ner FRÅN 500 (= 100) ger 400.",
+          misstag: "Vanligt fel: räkna 25 % - 20 % = 5 % netto → 420 kr. Men procent är inte additivt eftersom de räknas på olika baser." },
+        { question: "Om 3x - 7 = 2x + 5, vad är x?",
+          options: ["2", "8", "12", "14"], correct: 2,
+          explanation: "x = 12.",
+          why: "Flytta 2x till vänster: 3x - 2x = 5 + 7 → x = 12.",
+          misstag: "Glöm inte att tecknen BYTER när du flyttar över likhetstecknet. -7 blir +7 på andra sidan." },
+        { question: "En klass har 30 elever. 40 % är pojkar. Hur många flickor finns det?",
+          options: ["12", "15", "18", "20"], correct: 2,
+          explanation: "Pojkar: 30·0,4 = 12. Flickor: 30 - 12 = 18.",
+          why: "40 % pojkar → 60 % flickor = 30·0,6 = 18.",
+          misstag: "12 är antalet POJKAR, inte flickor. Läs frågan noggrant så du svarar på rätt grupp." },
+        { question: "Summan av tre på varandra följande udda tal är 63. Vad är det största talet?",
+          options: ["19", "21", "23", "25"], correct: 2,
+          explanation: "Talen är 19, 21, 23. Största = 23.",
+          why: "Kalla mellersta n: (n-2) + n + (n+2) = 3n = 63 → n = 21. Största = n+2 = 23.",
+          misstag: "21 är det MELLERSTA talet, inte det största. Läs frågan." },
+        { question: "En bil kör 90 km/h. Hur lång tid tar 315 km?",
+          options: ["3 h 15 min", "3 h 30 min", "3 h 45 min", "4 h"], correct: 1,
+          explanation: "315 / 90 = 3,5 h = 3 h 30 min.",
+          why: "Tid = sträcka / fart = 315/90 = 3,5. 0,5 timme = 30 min.",
+          misstag: "0,5 h är 30 minuter, inte 50. En decimal motsvarar inte direkt minuter – multiplicera decimalen med 60." },
+        { question: "En triangels area är 36 cm² och basen 12 cm. Höjden?",
+          options: ["3 cm", "4 cm", "6 cm", "8 cm"], correct: 2,
+          explanation: "h = 2·36/12 = 6.",
+          why: "A = bh/2 → h = 2A/b = 2·36/12 = 72/12 = 6.",
+          misstag: "Glöm inte delat med 2 i triangelns areaformel. Utan delningen blir svaret 3 – fel." },
+        { question: "I en påse finns 3 röda, 5 blå och 2 gröna kulor. Sannolikheten att dra en blå?",
+          options: ["30 %", "40 %", "50 %", "60 %"], correct: 2,
+          explanation: "5 / 10 = 50 %.",
+          why: "Totalt 3+5+2 = 10 kulor. Blå: 5. P(blå) = 5/10 = 50 %.",
+          misstag: "Glöm inte att räkna TOTALEN rätt. Bara 5/7 (om du glömmer blå) eller 5/8 (om du glömmer gröna) ger fel." },
+        { question: "Vad är 2¹⁰?",
+          options: ["512", "1024", "2048", "4096"], correct: 1,
+          explanation: "2¹⁰ = 1024.",
+          why: "Dubbla stegvis: 2,4,8,16,32,64,128,256,512,1024.",
+          misstag: "512 = 2⁹. 2048 = 2¹¹. Lär dig potenserna av 2 upp till 2¹⁰ utantill – de dyker ofta upp." },
+        { question: "En rektangels längd är 3× bredden. Omkrets 48 cm. Arean?",
+          options: ["72 cm²", "96 cm²", "108 cm²", "144 cm²"], correct: 2,
+          explanation: "b=6, l=18, area = 108.",
+          why: "Låt bredd = b, längd = 3b. Omkrets 2(b+3b) = 8b = 48 → b=6, l=18. Area = 6·18 = 108.",
+          misstag: "Glöm inte multiplicera med 2 i omkretsen (varje sida förekommer två gånger)." },
+        { question: "Förenkla: (x² - 9) / (x + 3)",
+          options: ["x - 3", "x + 3", "x² - 3", "x - 9"], correct: 0,
+          explanation: "(x+3)(x-3) / (x+3) = x - 3.",
+          why: "x² - 9 är en konjugatregel: a² - b² = (a+b)(a-b). Här 9 = 3². Förkorta bort (x+3).",
+          misstag: "Tro inte att man kan dela bort tal inuti parenteser separat. Faktorisera först, förkorta sedan." },
+        { question: "Medelvärdet av 4 tal är 20. Vad är summan?",
+          options: ["24", "60", "80", "100"], correct: 2,
+          explanation: "Summa = medel · antal = 20·4 = 80.",
+          why: "Medelvärde = summa/antal → summa = medel · antal.",
+          misstag: "Blanda inte ihop medel med median. Medel är genomsnitt; median är det mittersta värdet." },
+        { question: "Om 20 % av ett tal är 30, vad är talet?",
+          options: ["60", "100", "150", "200"], correct: 2,
+          explanation: "0,20·x = 30 → x = 150.",
+          why: "Del = del% · hel. x = 30/0,20 = 150.",
+          misstag: "Glöm inte omvänt: att HITTA helheten när man känner delen. Dividera med procentsatsen." },
+        { question: "En kub har volymen 64 cm³. Vad är sidlängden?",
+          options: ["4 cm", "6 cm", "8 cm", "16 cm"], correct: 0,
+          explanation: "∛64 = 4.",
+          why: "Kubens volym = sida³. Sida = ∛64 = 4.",
+          misstag: "Glöm inte att det är kubikroten, inte kvadratroten. √64 = 8 (fel). ∛64 = 4 (rätt)." },
+        { question: "En vara rabatteras med 30 % och kostar nu 350 kr. Vad var originalpriset?",
+          options: ["420 kr", "455 kr", "500 kr", "525 kr"], correct: 2,
+          explanation: "350 / 0,70 = 500 kr.",
+          why: "Efter 30 % rabatt betalar man 70 %. 70 % av x = 350 → x = 350/0,70 = 500.",
+          misstag: "Vanligt fel: lägga till 30 % på 350 → 455. Men 30 % ska räknas på ORIGINALET, inte på det rabatterade priset." },
+        { question: "Om a = 3 och b = -2, vad är a² - b²?",
+          options: ["1", "5", "-5", "13"], correct: 1,
+          explanation: "9 - 4 = 5.",
+          why: "a² = 9. b² = (-2)² = 4. Differens = 9-4 = 5.",
+          misstag: "Glöm inte att b² är positivt även om b är negativt. (-2)² = 4, inte -4." },
+        { question: "En rätvinklig triangel har kateter 6 och 8. Hypotenusan?",
+          options: ["10", "12", "14", "48"], correct: 0,
+          explanation: "√(36+64) = √100 = 10.",
+          why: "Pythagoras: c² = a² + b² = 36 + 64 = 100. c = 10.",
+          misstag: "Blanda inte: addera inte hypotenusan (6+8=14 fel). Och testa inte bara multiplikation (6·8=48 fel). Pythagoras kräver kvadraterna." },
+        { question: "Vilket är det största primtalet under 30?",
+          options: ["27", "29", "23", "31"], correct: 1,
+          explanation: "29 är primtal och < 30.",
+          why: "Primtal under 30 inkluderar 2,3,5,7,11,13,17,19,23,29. Största = 29.",
+          misstag: "27 = 3·9, inte primtal. 31 är över 30. 23 är primtal men mindre än 29." },
+        { question: "10 % av 10 % av 1000 är?",
+          options: ["1", "10", "100", "1000"], correct: 1,
+          explanation: "10 % av 1000 = 100. 10 % av 100 = 10.",
+          why: "Två på varandra följande procentsatser multipliceras: 0,1·0,1·1000 = 10.",
+          misstag: "Läg inte ihop dem till 20 %. Och räkna inte bara EN gång (100)." },
+        { question: "En cirkels radie fördubblas. Hur ändras arean?",
+          options: ["Fördubblas", "Fyrdubblas", "Åttadubblas", "Halveras"], correct: 1,
+          explanation: "A = πr². Om r→2r, då A→π(2r)² = 4πr². Fyrdubbelt.",
+          why: "Arean beror på KVADRATEN av radien. Fördubblad radie → 2² = 4 gånger arean.",
+          misstag: "Intuitivt tror man att dubbel radie → dubbel area, men area växer KVADRATISKT med radien." },
+        { question: "Om x + y = 10 och x - y = 4, vad är x·y?",
+          options: ["16", "21", "24", "25"], correct: 1,
+          explanation: "x=7, y=3. xy = 21.",
+          why: "Addera ekvationerna: 2x = 14 → x = 7. Sen y = 10-7 = 3. 7·3 = 21.",
+          misstag: "Lös för x och y separat innan du multiplicerar. Man kan inte bara ta 10-4=6 eller 10·4=40." }
+    ]},
+
+    nog: { title: "NOG – Tillräckliga uppgifter", color: "kvant", questions: [
+        { question: "Hur stor är arean av en rektangel?\n(1) Längden är 8 cm.\n(2) Bredden är 5 cm.",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 2,
+          explanation: "Båda uppgifterna behövs tillsammans.",
+          why: "Area = l·b kräver både längd OCH bredd. Med bara en sida kan arean vara vad som helst.",
+          misstag: "Frestas att svara 'var och en räcker ensam' – men om du bara vet längd kan bredd vara vilken som helst." },
+        { question: "Är x > 5?\n(1) x > 3\n(2) x > 7",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 1,
+          explanation: "Endast (2) räcker: om x>7 så x>5 garanterat.",
+          why: "(1) x>3 är svagare – x kan vara 4 (< 5) eller 10 (>5). Inget entydigt svar. (2) x>7 är starkare – garanterar x>5.",
+          misstag: "Tro inte att 'mer information är alltid bättre'. I NOG gäller: RÄCKER informationen för att svara entydigt? (2) ensam räcker." },
+        { question: "Vad är medelvärdet av två tal?\n(1) Summan är 24.\n(2) Differensen är 8.",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 0,
+          explanation: "(1) ensam räcker: medel = summa/2 = 12.",
+          why: "Medelvärde behöver bara summa och antal. Antalet (2) är givet i frågan. Differensen behövs inte.",
+          misstag: "Man kan tro att man måste hitta talen separat. Men medel ÄR summa/antal – inga enskilda tal krävs." },
+        { question: "Hur många äpplen köpte Maria?\n(1) Hon betalade 45 kr totalt.\n(2) Varje äpple kostade 9 kr.",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 2,
+          explanation: "Båda behövs: 45/9 = 5 äpplen.",
+          why: "Antal = total/styckpris. (1) ger total, (2) ger styckpris. Båda krävs.",
+          misstag: "Ensam totalsumma (utan styckpris) eller styckpris (utan totalsumma) ger ingen antalsuppgift." },
+        { question: "Är talet n delbart med 6?\n(1) n är delbart med 3.\n(2) n är delbart med 2.",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 2,
+          explanation: "Delbart med 6 ⇔ delbart med både 2 och 3.",
+          why: "6 = 2·3. Ett tal är delbart med 6 om och endast om det är delbart med båda faktorerna.",
+          misstag: "(1) ensam: 9 är delbart med 3, men inte 6. (2) ensam: 4 är delbart med 2, men inte 6. Var för sig otillräckligt." },
+        { question: "Vad är x?\n(1) x + y = 10\n(2) x - y = 4",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 2,
+          explanation: "Båda krävs: 2x = 14, x = 7.",
+          why: "Två okända (x, y) kräver två ekvationer för entydig lösning. Addera: (x+y)+(x-y) = 14 → 2x = 14 → x=7.",
+          misstag: "Med bara (1) kan x vara 3 (om y=7) eller 8 (om y=2) – ej entydigt." },
+        { question: "Är Anna äldre än Bertil?\n(1) Bertil är född 1990.\n(2) Anna är äldre än Cesar som är äldre än Bertil.",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 1,
+          explanation: "(2) räcker: Anna > Cesar > Bertil ⇒ Anna > Bertil.",
+          why: "Transitivitet: om A>C och C>B så A>B.",
+          misstag: "(1) ger bara Bertils ålder utan information om Anna – värdelöst ensamt. (2) räcker via kedjan." },
+        { question: "Hur stor är vinkeln A i triangeln?\n(1) Vinkeln B är 50°.\n(2) Vinkeln C är 70°.",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 2,
+          explanation: "Båda krävs: A = 180 - 50 - 70 = 60°.",
+          why: "Vinkelsumman i en triangel är 180°. En ensam vinkel räcker inte för att bestämma de andra.",
+          misstag: "Grundfakta: triangelns vinkelsumma = 180° måste memoreras. Varje uppgift ger en ledtråd, båda behövs." },
+        { question: "Vad är x²?\n(1) x = 3\n(2) x² = 9",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 3,
+          explanation: "Var och en räcker: (1) ger x²=9. (2) ger direkt x²=9.",
+          why: "Båda uppgifterna, oberoende av varandra, ger svaret.",
+          misstag: "Man kan tro att (2) kräver att man vet x, men frågan är om x² – som (2) ger direkt." },
+        { question: "Är n ett jämnt tal?\n(1) n + 1 är udda.\n(2) n är delbart med 4.",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 3,
+          explanation: "Var och en räcker ensam.",
+          why: "(1) Om n+1 är udda måste n vara jämnt. (2) Delbart med 4 → delbart med 2 → jämnt.",
+          misstag: "Man kan tro att delbart med 4 (starkare villkor) är annorlunda än bara jämnt. Men delbar med 4 MEDFÖR jämnt." },
+        { question: "Vad kostar äpplet?\n(1) 3 äpplen kostar 15 kr.\n(2) Ett äpple är dubbelt så dyrt som en banan.",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 0,
+          explanation: "(1) räcker: 15/3 = 5 kr per äpple.",
+          why: "Ensam styckpris från totalpris och antal kräver bara (1).",
+          misstag: "(2) är värdelös ensam – bananens pris är okänt. Var uppmärksam på vilken info som är kopplad till ditt svar." },
+        { question: "Är x ett positivt tal?\n(1) x² = 16\n(2) x + 4 > 0",
+          options: ["(1) ensam räcker", "(2) ensam räcker", "(1) och (2) tillsammans räcker", "Var och en räcker ensam", "Ingen räcker"], correct: 4,
+          explanation: "Ingen räcker. (1): x=±4. (2): x>-4 (kan vara -3 eller 5). Tillsammans: x=4 (ej -4 pga x>-4). *Obs: tillsammans räcker faktiskt – välj C*",
+          why: "Rätta svaret är 'tillsammans räcker'. (1) ger x=4 eller -4. (2) utesluter x=-4 (eftersom -4+4=0, inte >0). Återstår x=4 → positivt.",
+          misstag: "Testa alltid att kombinera informationen även om ingen räcker ensam." }
+    ]},
+
+    dtk: { title: "DTK – Diagram, tabeller, kartor", color: "kvant", questions: [
+        { context: "Befolkning i Norden 2023 (miljoner):\nSverige: 10,5\nNorge: 5,5\nDanmark: 5,9\nFinland: 5,5\nIsland: 0,4",
+          question: "Hur stor andel utgör Sverige (avrundat)?",
+          options: ["32 %", "38 %", "42 %", "48 %"], correct: 1,
+          explanation: "Total 27,8 milj. 10,5/27,8 ≈ 38 %.",
+          why: "Summera alla: 10,5+5,5+5,9+5,5+0,4 = 27,8. Sveriges andel: 10,5/27,8 ≈ 0,378 = 38 %.",
+          misstag: "Glöm inte att INKLUDERA Sverige i totalen. Felaktigt: 10,5/(27,8-10,5) → fel procent." },
+        { context: "Medeltemperatur Stockholm (°C):\nJan: -3\nApr: 6\nJul: 18\nOkt: 8",
+          question: "Vad är genomsnittlig temperatur för de fyra månaderna?",
+          options: ["5,75", "7,00", "7,25", "8,00"], correct: 2,
+          explanation: "(-3+6+18+8)/4 = 29/4 = 7,25.",
+          why: "Medelvärde: addera alla värden, dela med antalet.",
+          misstag: "Glöm inte att Januari är NEGATIV (-3, inte +3). Ett teckenfel ger summa 35 → fel medel." },
+        { context: "Sålda bilar per kvartal (tusental):\nQ1: 45, Q2: 52, Q3: 38, Q4: 65",
+          question: "Procentuell ökning Q3 → Q4?",
+          options: ["Cirka 41 %", "Cirka 52 %", "Cirka 61 %", "Cirka 71 %"], correct: 3,
+          explanation: "(65-38)/38 ≈ 71 %.",
+          why: "Procentuell förändring = (nytt - gammalt)/gammalt. (65-38)/38 = 27/38 ≈ 0,71 = 71 %.",
+          misstag: "Använd GAMLA värdet (Q3=38) som nämnare, inte det nya (Q4=65). (65-38)/65 ≈ 42 % vore fel svar." },
+        { context: "Transport till jobbet (2000 personer):\nBil 45 %, Kollektivt 30 %, Cykel 15 %, Gång 10 %",
+          question: "Hur många fler åker bil än kollektivt?",
+          options: ["200", "250", "300", "350"], correct: 2,
+          explanation: "Bil 900, kollektivt 600. Differens 300.",
+          why: "45 % av 2000 = 900. 30 % av 2000 = 600. 900 - 600 = 300.",
+          misstag: "Slarva inte med procenträkningen. Beräkna båda antalen först, jämför sedan." },
+        { context: "Nationella prov (% godkända):\nSkola A: Matte 78, Sv 85, Eng 90\nSkola B: Matte 82, Sv 79, Eng 88\nSkola C: Matte 91, Sv 88, Eng 85",
+          question: "Vilken skola har högst snitt?",
+          options: ["A", "B", "C", "Alla lika"], correct: 2,
+          explanation: "A: 84,3. B: 83. C: 88. C vinner.",
+          why: "Beräkna snitt för var och en: A=(78+85+90)/3=84,3. B=(82+79+88)/3=83. C=(91+88+85)/3=88.",
+          misstag: "Kolla inte bara ett ämne. Skola C har lägst engelska men högst snitt totalt." },
+        { context: "BNP-tillväxt (%):\n2019: 1,4\n2020: -2,9\n2021: 5,1\n2022: 2,7\n2023: 0,8",
+          question: "Förändring i BNP-tillväxt 2019 → 2020?",
+          options: ["-1,5 pe", "-4,3 pe", "+3,7 pe", "-2,9 pe"], correct: 1,
+          explanation: "-2,9 - 1,4 = -4,3 procentenheter.",
+          why: "Förändring = nytt - gammalt. -2,9 minus +1,4 = -4,3.",
+          misstag: "Svaret -2,9 (bara 2020-värdet) är en klassisk fälla. Frågan gäller FÖRÄNDRINGEN, inte slutvärdet. Procentenheter ≠ procent!" },
+        { context: "Fördelning av hushållens utgifter:\nBoende 35 %, Mat 20 %, Transport 15 %, Fritid 10 %, Övrigt 20 %\nTotala utgifter: 30 000 kr/mån",
+          question: "Hur mycket spenderas på boende?",
+          options: ["3 000 kr", "6 000 kr", "10 500 kr", "15 000 kr"], correct: 2,
+          explanation: "0,35 · 30 000 = 10 500 kr.",
+          why: "35 % av 30 000 = 30 000 · 0,35 = 10 500.",
+          misstag: "Delsumman 10 500 kr är rätt – men många räknar fel på decimaler eller procenttecken." },
+        { context: "Tabell över besökare per månad:\nJan 1200, Feb 1500, Mar 1800, Apr 2100, Maj 2400",
+          question: "Vilken var den genomsnittliga ökningen per månad?",
+          options: ["200", "250", "300", "350"], correct: 2,
+          explanation: "Total ökning 1200, över 4 intervall = 300/månad.",
+          why: "Maj - Jan = 2400 - 1200 = 1200. Antal intervaller = 4 (Jan→Feb, Feb→Mar, Mar→Apr, Apr→Maj). 1200/4 = 300.",
+          misstag: "Antal intervall = antal månader - 1. Fem månader men bara fyra hopp. Delning med 5 ger 240 (fel)." },
+        { context: "Stapeldiagram över partistöd (%):\nA: 28, B: 22, C: 17, D: 13, E: 10, F: 10",
+          question: "Hur stor andel har de tre minsta partierna tillsammans?",
+          options: ["23 %", "33 %", "40 %", "45 %"], correct: 1,
+          explanation: "De tre minsta: D(13)+E(10)+F(10) = 33 %.",
+          why: "Sortera från minst: F=10, E=10, D=13. Summa 33.",
+          misstag: "Identifiera vilka som är 'minst'. Många slarvar och tar tre random eller de tre FÖRSTA i listan." },
+        { context: "Årsnederbörd (mm) i tre städer:\nGöteborg 758, Stockholm 539, Kiruna 500",
+          question: "Hur många procent mer nederbörd har Göteborg jämfört med Kiruna?",
+          options: ["32 %", "52 %", "65 %", "152 %"], correct: 1,
+          explanation: "(758-500)/500 = 258/500 = 51,6 % ≈ 52 %.",
+          why: "Procentuell skillnad: (stort - litet)/litet. (758-500)/500 = 0,516.",
+          misstag: "152 % är svaret om man frågar 'hur många procent AV' (758/500=152%). Men 'hur många procent MER' betyder ökning, därav -100." },
+        { context: "Skolresultat per år (snittbetyg):\n2020: 210\n2021: 215\n2022: 218\n2023: 225",
+          question: "Under vilket år ökade snittet mest?",
+          options: ["2020→21", "2021→22", "2022→23", "Alla lika"], correct: 2,
+          explanation: "2020→21: +5. 2021→22: +3. 2022→23: +7.",
+          why: "Räkna skillnader: 215-210=5, 218-215=3, 225-218=7. Max = 7 (2022→23).",
+          misstag: "Man kan vilja ta senaste värdet (225) eller ett random svar. Beräkna ALLA skillnader systematiskt." },
+        { context: "Tabell: Anställda per avdelning\nAdm: 25, IT: 40, Försäljning: 85, Produktion: 150",
+          question: "Hur stor andel av de anställda jobbar INTE i produktion?",
+          options: ["30 %", "40 %", "50 %", "60 %"], correct: 2,
+          explanation: "Total 300. Ej produktion: 150. 150/300 = 50 %.",
+          why: "Summera: 25+40+85+150 = 300. Ej produktion = total - produktion = 300-150 = 150. 150/300 = 50%.",
+          misstag: "'INTE' kräver komplementet. Slarva inte och beräkna ANDELEN I produktion i stället." }
+    ]}
+};
+
+const sectionMeta = {
+    ord: { name: "Ordförståelse", desc: "Testa din ordkunskap" },
+    las: { name: "Läsförståelse", desc: "Läs och förstå texter" },
+    mek: { name: "Meningskomplettering", desc: "Fyll i rätt ord" },
+    elf: { name: "Engelsk läsförståelse", desc: "Reading comprehension" },
+    xyz: { name: "Kvantitativ jämförelse", desc: "Jämför uttryck" },
+    kva: { name: "Kvantitativa resonemang", desc: "Matematiska problem" },
+    nog: { name: "Tillräckliga uppgifter", desc: "Bedöm om info räcker" },
+    dtk: { name: "Diagram & tabeller", desc: "Tolka data visuellt" }
+};
+
+let currentQuiz = null;
+let currentQuestionIndex = 0;
+let score = 0;
+let answers = [];
+let shuffledQuestions = [];
+let sessionWrapped = false;
+const SESSION_SIZE = 15;
+
+function getStats() { try { return JSON.parse(localStorage.getItem('hp-stats') || '{}'); } catch(e) { return {}; } }
+function saveStats(type, correct, total) {
+    const stats = getStats();
+    if (!stats[type]) stats[type] = { attempts: 0, totalCorrect: 0, totalQuestions: 0 };
+    stats[type].attempts++;
+    stats[type].totalCorrect += correct;
+    stats[type].totalQuestions += total;
+    try { localStorage.setItem('hp-stats', JSON.stringify(stats)); } catch(e) {}
+}
+
+// Seen-question tracking so frågor inte upprepas
+function getSeen(type) {
+    try { return JSON.parse(localStorage.getItem(`hp-seen-${type}`) || '[]'); } catch(e) { return []; }
+}
+function markSeen(type, qIndex) {
+    const seen = getSeen(type);
+    if (!seen.includes(qIndex)) {
+        seen.push(qIndex);
+        try { localStorage.setItem(`hp-seen-${type}`, JSON.stringify(seen)); } catch(e) {}
+    }
+}
+function resetSeen(type) {
+    try { localStorage.removeItem(`hp-seen-${type}`); } catch(e) {}
+}
+function resetAllProgress() {
+    if (!confirm('Nollställ alla framsteg (sedda frågor + statistik)?')) return;
+    Object.keys(questionBank).forEach(t => resetSeen(t));
+    try { localStorage.removeItem('hp-stats'); } catch(e) {}
+    renderCards();
+    renderStats();
+}
+
+function renderStats() {
+    const stats = getStats();
+    const bar = document.getElementById('stats-bar');
+    const entries = Object.entries(stats);
+    if (entries.length === 0) {
+        bar.innerHTML = '<span class="stat-chip">Inga resultat än – börja öva!</span>';
+        return;
+    }
+    bar.innerHTML = entries.map(([key, s]) => {
+        const pct = Math.round((s.totalCorrect / s.totalQuestions) * 100);
+        return `<span class="stat-chip"><strong>${key.toUpperCase()}</strong> ${pct}% (${s.attempts} försök)</span>`;
+    }).join('');
+}
+
+function renderCards() {
+    const verbal = ['ord', 'las', 'mek', 'elf'];
+    const kvant = ['xyz', 'kva', 'nog', 'dtk'];
+    const make = (keys, cls) => keys.map(k => {
+        const total = questionBank[k].questions.length;
+        const seen = Math.min(getSeen(k).length, total);
+        const pct = total ? Math.round((seen / total) * 100) : 0;
+        const done = seen >= total && total > 0;
+        return `
+        <button class="card card-${cls}" data-quiz="${k}">
+            <span class="card-code">${k.toUpperCase()}</span>
+            <span class="card-name">${sectionMeta[k].name}</span>
+            <span class="card-desc">${sectionMeta[k].desc}</span>
+            <span class="card-count">${seen}/${total} sedda${done ? ' – klar!' : ''}</span>
+            <span class="card-progress"><span class="card-progress-fill" style="width:${pct}%"></span></span>
+        </button>`;
+    }).join('');
+    document.getElementById('verbal-cards').innerHTML = make(verbal, 'verbal');
+    document.getElementById('kvant-cards').innerHTML = make(kvant, 'kvant');
+    document.querySelectorAll('.card').forEach(c => {
+        c.addEventListener('click', () => startQuiz(c.dataset.quiz));
+    });
+}
+
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+function goHome() {
+    renderStats();
+    showScreen('start-screen');
+}
+
+function startQuiz(type) {
+    const bank = questionBank[type];
+    if (!bank) return;
+    const totalQ = bank.questions.length;
+    let seen = getSeen(type);
+    let unseenIndices = [];
+    for (let i = 0; i < totalQ; i++) if (!seen.includes(i)) unseenIndices.push(i);
+    sessionWrapped = false;
+    if (unseenIndices.length === 0) {
+        // Alla frågor är sedda - nollställ och börja om
+        resetSeen(type);
+        sessionWrapped = true;
+        unseenIndices = [];
+        for (let i = 0; i < totalQ; i++) unseenIndices.push(i);
+    }
+    // Shuffla obesvarade frågor och ta max SESSION_SIZE
+    const picked = shuffle(unseenIndices).slice(0, SESSION_SIZE);
+    currentQuiz = type;
+    currentQuestionIndex = 0;
+    score = 0;
+    answers = [];
+    // Bygg session. Shuffla även svarsalternativen och remappa rätt-index.
+    shuffledQuestions = picked.map(idx => {
+        const q = bank.questions[idx];
+        const correctText = q.options[q.correct];
+        const shuffledOpts = shuffle(q.options);
+        return {
+            ...q,
+            options: shuffledOpts,
+            correct: shuffledOpts.indexOf(correctText),
+            _origIndex: idx
+        };
+    });
+    const titleEl = document.getElementById('quiz-title');
+    titleEl.textContent = bank.title + (sessionWrapped ? ' - ny runda!' : '');
+    showScreen('quiz-screen');
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const q = shuffledQuestions[currentQuestionIndex];
+    const total = shuffledQuestions.length;
+    document.getElementById('quiz-progress').textContent = `Fråga ${currentQuestionIndex + 1} av ${total}`;
+    document.getElementById('quiz-score').textContent = `${score} rätt`;
+    document.getElementById('question-context').textContent = q.context || '';
+    document.getElementById('question-text').textContent = q.question;
+    const optionsEl = document.getElementById('options');
+    optionsEl.innerHTML = '';
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = `${String.fromCharCode(65 + i)}. ${opt}`;
+        btn.addEventListener('click', () => selectAnswer(i));
+        optionsEl.appendChild(btn);
+    });
+    const fb = document.getElementById('feedback');
+    fb.className = 'feedback';
+    fb.innerHTML = '';
+    document.getElementById('next-btn').style.display = 'none';
+    window.scrollTo(0, 0);
+}
+
+function selectAnswer(index) {
+    const q = shuffledQuestions[currentQuestionIndex];
+    const buttons = document.querySelectorAll('.option-btn');
+    const isCorrect = index === q.correct;
+    buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.correct) btn.classList.add('correct');
+        if (i === index && !isCorrect) btn.classList.add('wrong');
+    });
+    if (isCorrect) score++;
+    // Markera frågan som sedd så den inte återkommer
+    if (typeof q._origIndex === 'number') markSeen(currentQuiz, q._origIndex);
+    answers.push({ question: q.question, correct: isCorrect });
+
+    const fb = document.getElementById('feedback');
+    const correctLetter = String.fromCharCode(65 + q.correct);
+    const correctText = q.options[q.correct];
+
+    let html = '';
+    if (isCorrect) {
+        html += `<div class="feedback-title">✓ Rätt svar!</div>`;
+        html += `<div>${escapeHtml(q.explanation)}</div>`;
+        if (q.why) {
+            html += `<div class="feedback-section"><div class="feedback-section-label">Varför</div>${escapeHtml(q.why)}</div>`;
+        }
+    } else {
+        const userLetter = String.fromCharCode(65 + index);
+        html += `<div class="feedback-title">✗ Fel svar</div>`;
+        html += `<div>Du svarade <strong>${userLetter}</strong>. Rätt svar är <strong>${correctLetter}. ${escapeHtml(correctText)}</strong>.</div>`;
+        html += `<div class="feedback-section"><div class="feedback-section-label">Förklaring</div>${escapeHtml(q.explanation)}</div>`;
+        if (q.why) {
+            html += `<div class="feedback-section"><div class="feedback-section-label">Varför detta är rätt</div>${escapeHtml(q.why)}</div>`;
+        }
+        if (q.misstag) {
+            html += `<div class="feedback-section"><div class="feedback-section-label">Vanligt misstag</div>${escapeHtml(q.misstag)}</div>`;
+        }
+    }
+    fb.className = `feedback show ${isCorrect ? 'correct' : 'wrong'}`;
+    fb.innerHTML = html;
+
+    const nextBtn = document.getElementById('next-btn');
+    nextBtn.style.display = 'block';
+    nextBtn.textContent = currentQuestionIndex < shuffledQuestions.length - 1 ? 'Nästa fråga' : 'Visa resultat';
+}
+
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s || '';
+    return div.innerHTML;
+}
+
+function nextQuestion() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < shuffledQuestions.length) {
+        renderQuestion();
+    } else {
+        showResults();
+    }
+}
+
+function showResults() {
+    const total = shuffledQuestions.length;
+    const pct = Math.round((score / total) * 100);
+    saveStats(currentQuiz, score, total);
+    let icon, message;
+    if (pct >= 80) { icon = '★ Toppresultat!'; message = 'Utmärkt! Du behärskar detta område mycket bra.'; }
+    else if (pct >= 60) { icon = '✓ Bra jobbat!'; message = 'Bra resultat! Fortsätt öva för att nå ännu högre.'; }
+    else if (pct >= 40) { icon = '↗ På god väg'; message = 'Du är på rätt väg. Fokusera på det du missar.'; }
+    else { icon = '↻ Fortsätt öva'; message = 'Ge inte upp! Repetition är nyckeln.'; }
+    document.getElementById('results-icon').textContent = icon;
+    document.getElementById('results-score').textContent = `${score}/${total} (${pct}%)`;
+    document.getElementById('results-message').textContent = message;
+    const breakdown = document.getElementById('results-breakdown');
+    breakdown.innerHTML = answers.map((a, i) => {
+        const shortQ = a.question.length > 60 ? a.question.substring(0, 60) + '...' : a.question;
+        return `<div class="result-item"><div class="result-marker ${a.correct ? 'correct' : 'wrong'}"></div><span>${i + 1}. ${escapeHtml(shortQ.replace(/\n/g, ' '))}</span></div>`;
+    }).join('');
+    showScreen('results-screen');
+}
+
+document.getElementById('btn-back').addEventListener('click', goHome);
+document.getElementById('next-btn').addEventListener('click', nextQuestion);
+document.getElementById('btn-retry').addEventListener('click', () => startQuiz(currentQuiz));
+document.getElementById('btn-home').addEventListener('click', goHome);
+
+renderCards();
+renderStats();
+</script>
+</body>
+</html>
