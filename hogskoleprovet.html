@@ -65,6 +65,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .results-actions { display: flex; gap: 0.75rem; flex-direction: column; }
 .btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; color: white; padding: 0.8rem 2rem; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; font-family: inherit; }
 .btn-secondary { background: none; border: 1px solid #475569; color: #94a3b8; padding: 0.8rem 2rem; border-radius: 10px; font-size: 1rem; cursor: pointer; font-family: inherit; }
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+.modal-overlay.open { display: flex; }
+.modal { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 2rem; width: 100%; max-width: 420px; }
+.modal-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.25rem; }
+.modal-sub { font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem; }
+.modal-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 0.75rem; }
+.size-btns { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; }
+.size-btn { background: #0f172a; border: 2px solid #334155; color: #94a3b8; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.size-btn:hover { border-color: #60a5fa; color: #60a5fa; }
+.size-btn.active { border-color: #60a5fa; background: #1e3a5f; color: #e2e8f0; }
+.modal-actions { display: flex; gap: 0.75rem; }
+.modal-actions .btn-primary { flex: 1; }
+.modal-actions .btn-secondary { flex: 1; }
+/* Progress bar on cards */
+.card-progress { height: 3px; background: #334155; border-radius: 2px; overflow: hidden; margin-top: 0.5rem; }
+.card-progress-fill { height: 100%; background: linear-gradient(90deg, #60a5fa, #a78bfa); border-radius: 2px; transition: width 0.3s; }
 @media (max-width: 600px) {
     .hero h1 { font-size: 2rem; }
     .cards { grid-template-columns: 1fr 1fr; }
@@ -107,6 +124,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
             <div id="options" class="options"></div>
             <div id="feedback" class="feedback"></div>
             <button id="next-btn" class="btn-next" style="display:none">Nästa fråga</button>
+        </div>
+    </div>
+
+    <!-- Välj antal frågor -->
+    <div class="modal-overlay" id="size-modal">
+        <div class="modal">
+            <div class="modal-title" id="modal-quiz-name"></div>
+            <div class="modal-sub" id="modal-quiz-sub"></div>
+            <div class="modal-label">Antal frågor per session</div>
+            <div class="size-btns" id="size-btns"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="modal-cancel">Avbryt</button>
+                <button class="btn-primary" id="modal-start">Starta →</button>
+            </div>
         </div>
     </div>
 
@@ -877,7 +908,8 @@ let score = 0;
 let answers = [];
 let shuffledQuestions = [];
 let sessionWrapped = false;
-const SESSION_SIZE = 15;
+let pendingQuizType = null;
+let selectedSize = 10;
 
 function getStats() { try { return JSON.parse(localStorage.getItem('hp-stats') || '{}'); } catch(e) { return {}; } }
 function saveStats(type, correct, total) {
@@ -945,9 +977,64 @@ function renderCards() {
     document.getElementById('verbal-cards').innerHTML = make(verbal, 'verbal');
     document.getElementById('kvant-cards').innerHTML = make(kvant, 'kvant');
     document.querySelectorAll('.card').forEach(c => {
-        c.addEventListener('click', () => startQuiz(c.dataset.quiz));
+        c.addEventListener('click', () => showSizeModal(c.dataset.quiz));
     });
 }
+
+// --- Modal för att välja antal frågor ---
+function showSizeModal(type) {
+    const bank = questionBank[type];
+    if (!bank) return;
+    pendingQuizType = type;
+    const total = bank.questions.length;
+    const seen = getSeen(type).length;
+    const unseen = Math.max(0, total - seen);
+
+    document.getElementById('modal-quiz-name').textContent = bank.title;
+    document.getElementById('modal-quiz-sub').textContent =
+        unseen > 0
+            ? `${unseen} av ${total} frågor kvar att göra`
+            : `Alla ${total} frågor klara – startar ny runda!`;
+
+    // Bygg storleksknappar dynamiskt baserat på antal tillgängliga frågor
+    const pool = unseen > 0 ? unseen : total;
+    const presets = [5, 10, 15, 20, 30].filter(n => n <= pool);
+    if (!presets.includes(pool)) presets.push(pool); // "Alla"
+
+    const btnContainer = document.getElementById('size-btns');
+    btnContainer.innerHTML = '';
+    if (selectedSize > pool) selectedSize = pool;
+
+    presets.forEach(n => {
+        const btn = document.createElement('button');
+        btn.className = 'size-btn' + (n === selectedSize ? ' active' : '');
+        btn.textContent = n === pool ? `Alla (${n})` : String(n);
+        btn.addEventListener('click', () => {
+            selectedSize = n;
+            btnContainer.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+        btnContainer.appendChild(btn);
+    });
+
+    document.getElementById('size-modal').classList.add('open');
+}
+
+function closeSizeModal() {
+    document.getElementById('size-modal').classList.remove('open');
+    pendingQuizType = null;
+}
+
+document.getElementById('modal-cancel').addEventListener('click', closeSizeModal);
+document.getElementById('modal-start').addEventListener('click', () => {
+    const type = pendingQuizType;
+    closeSizeModal();
+    startQuiz(type);
+});
+// Stäng om man klickar utanför modalen
+document.getElementById('size-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeSizeModal();
+});
 
 function shuffle(arr) {
     const a = [...arr];
@@ -965,6 +1052,7 @@ function showScreen(id) {
 }
 
 function goHome() {
+    renderCards();
     renderStats();
     showScreen('start-screen');
 }
@@ -984,8 +1072,8 @@ function startQuiz(type) {
         unseenIndices = [];
         for (let i = 0; i < totalQ; i++) unseenIndices.push(i);
     }
-    // Shuffla obesvarade frågor och ta max SESSION_SIZE
-    const picked = shuffle(unseenIndices).slice(0, SESSION_SIZE);
+    // Shuffla obesvarade frågor och ta det antal användaren valde
+    const picked = shuffle(unseenIndices).slice(0, selectedSize);
     currentQuiz = type;
     currentQuestionIndex = 0;
     score = 0;
