@@ -346,6 +346,21 @@ body {
   .question-text { font-size: 18px; }
   .option-btn { font-size: 15px; }
 }
+
+/* Auth */
+.auth-btn { width:32px; height:32px; border-radius:50%; background:var(--fill); color:var(--label3); border:none; font-family:var(--font); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; }
+.auth-btn.signed-in { background:var(--green); color:white; font-size:13px; font-weight:700; }
+.auth-btn:active { opacity:0.6; }
+.auth-input { width:100%; background:var(--fill2); border:1.5px solid var(--separator2); border-radius:10px; padding:13px 14px; font-family:var(--font); font-size:16px; color:var(--label); outline:none; margin-bottom:10px; box-sizing:border-box; }
+.auth-input:focus { border-color:var(--blue); }
+.auth-error { color:var(--red); font-size:13px; text-align:center; min-height:18px; margin-bottom:6px; }
+.auth-toggle { text-align:center; font-size:14px; color:var(--blue); background:none; border:none; font-family:var(--font); cursor:pointer; padding:12px; width:100%; }
+.auth-user-row { padding:20px 20px 14px; }
+.auth-user-email { font-size:16px; font-weight:600; }
+.auth-user-sub { font-size:13px; color:var(--label3); margin-top:3px; }
+.auth-sep { height:0.5px; background:var(--separator); margin:0 20px; }
+.btn-danger { background:none; border:none; font-family:var(--font); font-size:17px; color:var(--red); cursor:pointer; width:100%; text-align:left; padding:14px 20px; }
+.btn-danger:active { opacity:0.5; }
 </style>
 </head>
 <body>
@@ -355,7 +370,9 @@ body {
   <div class="nav-bar">
     <div style="min-width:80px;"></div>
     <div class="nav-title">Högskoleprovet</div>
-    <div style="min-width:80px;"></div>
+    <div style="min-width:80px;display:flex;justify-content:flex-end;">
+      <button class="auth-btn" id="auth-btn" onclick="openAuthModal()">👤</button>
+    </div>
   </div>
   <div class="large-title-wrap">
     <div class="large-title">Öva</div>
@@ -467,6 +484,42 @@ body {
     <div class="tweak-opts" id="tw-theme">
       <button class="tweak-btn on" data-t="light">Ljus</button>
       <button class="tweak-btn" data-t="dark">Mörk</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<!-- AUTH SHEET -->
+<div class="sheet-overlay" id="auth-modal">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div id="auth-view-out">
+      <div class="sheet-header">
+        <div class="sheet-title" id="auth-title">Logga in</div>
+        <div class="sheet-sub">Spara dina framsteg i molnet</div>
+      </div>
+      <div style="padding:16px 20px 0;">
+        <input class="auth-input" id="auth-email" type="email" placeholder="E-postadress" autocomplete="email">
+        <input class="auth-input" id="auth-password" type="password" placeholder="Lösenord" autocomplete="current-password">
+        <div class="auth-error" id="auth-error"></div>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn-cancel" id="auth-cancel">Avbryt</button>
+        <button class="btn-primary" id="auth-submit">Logga in</button>
+      </div>
+      <button class="auth-toggle" id="auth-toggle">Inget konto? Registrera dig</button>
+    </div>
+    <div id="auth-view-in" style="display:none;">
+      <div class="auth-user-row">
+        <div class="auth-user-email" id="auth-user-email"></div>
+        <div class="auth-user-sub" id="auth-sync-label">Framsteg synkas automatiskt ☁️</div>
+      </div>
+      <div class="auth-sep"></div>
+      <button class="btn-danger" id="auth-logout">Logga ut</button>
+      <div class="sheet-actions" style="padding-top:4px;">
+        <button class="btn-cancel" id="auth-close">Stäng</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1425,6 +1478,11 @@ function resetAllProgress() {
     if (!confirm('Nollställ alla framsteg (sedda frågor + statistik)?')) return;
     Object.keys(questionBank).forEach(t => resetSeen(t));
     try { localStorage.removeItem('hp-stats'); } catch(e) {}
+    // Rensa även i molnet om inloggad
+    if (currentUser) {
+        supa.from('user_stats').delete().eq('user_id', currentUser.id).then(() => {});
+        supa.from('user_seen').delete().eq('user_id', currentUser.id).then(() => {});
+    }
     renderCards();
     renderStats();
 }
@@ -1675,6 +1733,7 @@ function showResults() {
     const total = shuffledQuestions.length;
     const pct = Math.round((score / total) * 100);
     saveStats(currentQuiz, score, total);
+    syncToCloud().catch(() => {});
     let message;
     let iconEmoji, iconLabel;
   if (pct >= 80) { iconEmoji='🏆'; iconLabel='Toppresultat!'; message='Utmärkt! Du behärskar detta område.'; }
@@ -1700,6 +1759,146 @@ document.getElementById('btn-home').addEventListener('click', goHome);
 
 renderCards();
 renderStats();
+
+// ─── Supabase auth & sync ──────────────────────────────────
+const SUPA_URL = 'https://lqskeswnykjszrzzpkks.supabase.co';
+const SUPA_KEY = 'sb_publishable_ICIQe9jzzZlFtVCqMSZ-3g_i1JunV_j';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser = null;
+
+function updateAuthBtn() {
+    const btn = document.getElementById('auth-btn');
+    if (!btn) return;
+    if (currentUser) {
+        btn.className = 'auth-btn signed-in';
+        btn.textContent = (currentUser.email || '?')[0].toUpperCase();
+    } else {
+        btn.className = 'auth-btn';
+        btn.textContent = '👤';
+    }
+}
+
+async function syncToCloud() {
+    if (!currentUser) return;
+    try {
+        const stats = getStats();
+        for (const [type, s] of Object.entries(stats)) {
+            await supa.from('user_stats').upsert({
+                user_id: currentUser.id, quiz_type: type,
+                attempts: s.attempts, total_correct: s.totalCorrect,
+                total_questions: s.totalQuestions
+            }, { onConflict: 'user_id,quiz_type' });
+        }
+        for (const type of Object.keys(questionBank)) {
+            const seen = getSeen(type);
+            if (seen.length > 0) {
+                await supa.from('user_seen').upsert({
+                    user_id: currentUser.id, quiz_type: type, seen_indices: seen
+                }, { onConflict: 'user_id,quiz_type' });
+            }
+        }
+    } catch(e) { console.warn('syncToCloud failed', e); }
+}
+
+async function syncFromCloud() {
+    if (!currentUser) return;
+    try {
+        const [{ data: sData }, { data: seenData }] = await Promise.all([
+            supa.from('user_stats').select('*').eq('user_id', currentUser.id),
+            supa.from('user_seen').select('*').eq('user_id', currentUser.id)
+        ]);
+        if (sData?.length) {
+            const stats = {};
+            sData.forEach(r => stats[r.quiz_type] = { attempts: r.attempts, totalCorrect: r.total_correct, totalQuestions: r.total_questions });
+            localStorage.setItem('hp-stats', JSON.stringify(stats));
+        }
+        if (seenData?.length) {
+            seenData.forEach(r => localStorage.setItem(`hp-seen-${r.quiz_type}`, JSON.stringify(r.seen_indices)));
+        }
+    } catch(e) { console.warn('syncFromCloud failed', e); }
+}
+
+// Lyssna på auth-förändringar
+supa.auth.onAuthStateChange(async (event, session) => {
+    currentUser = session?.user ?? null;
+    updateAuthBtn();
+    if (event === 'SIGNED_IN') {
+        await syncFromCloud();
+        renderCards();
+        renderStats();
+    }
+});
+
+// Återställ session vid sidladdning
+supa.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+        currentUser = session.user;
+        updateAuthBtn();
+        syncFromCloud().then(() => { renderCards(); renderStats(); });
+    }
+});
+
+// Auth sheet
+let isSignUp = false;
+
+function openAuthModal() {
+    if (currentUser) {
+        document.getElementById('auth-view-out').style.display = 'none';
+        document.getElementById('auth-view-in').style.display = 'block';
+        document.getElementById('auth-user-email').textContent = currentUser.email;
+    } else {
+        document.getElementById('auth-view-out').style.display = 'block';
+        document.getElementById('auth-view-in').style.display = 'none';
+        document.getElementById('auth-error').textContent = '';
+        document.getElementById('auth-email').value = '';
+        document.getElementById('auth-password').value = '';
+    }
+    document.getElementById('auth-modal').classList.add('open');
+}
+
+function closeAuthModal() {
+    document.getElementById('auth-modal').classList.remove('open');
+}
+
+document.getElementById('auth-cancel').addEventListener('click', closeAuthModal);
+document.getElementById('auth-close').addEventListener('click', closeAuthModal);
+document.getElementById('auth-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAuthModal(); });
+
+document.getElementById('auth-toggle').addEventListener('click', () => {
+    isSignUp = !isSignUp;
+    document.getElementById('auth-title').textContent = isSignUp ? 'Skapa konto' : 'Logga in';
+    document.getElementById('auth-submit').textContent = isSignUp ? 'Registrera' : 'Logga in';
+    document.getElementById('auth-toggle').textContent = isSignUp ? 'Har du ett konto? Logga in' : 'Inget konto? Registrera dig';
+    document.getElementById('auth-error').textContent = '';
+});
+
+document.getElementById('auth-submit').addEventListener('click', async () => {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const errEl = document.getElementById('auth-error');
+    const btn = document.getElementById('auth-submit');
+    if (!email || !password) { errEl.textContent = 'Fyll i e-post och lösenord.'; return; }
+    btn.disabled = true; btn.textContent = '...';
+    const { error } = isSignUp
+        ? await supa.auth.signUp({ email, password })
+        : await supa.auth.signInWithPassword({ email, password });
+    btn.disabled = false;
+    btn.textContent = isSignUp ? 'Registrera' : 'Logga in';
+    if (error) {
+        errEl.textContent = error.message.includes('Invalid') ? 'Fel e-post eller lösenord.' : error.message;
+    } else {
+        if (isSignUp) await syncToCloud(); // Ladda upp lokala framsteg vid nytt konto
+        closeAuthModal();
+    }
+});
+
+document.getElementById('auth-logout').addEventListener('click', async () => {
+    await supa.auth.signOut();
+    closeAuthModal();
+    renderCards();
+    renderStats();
+});
 
 </script>
 </body>
