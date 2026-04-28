@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where python:*)",
+      "Bash(where node:*)",
+      "Bash(where php:*)",
+      "Bash(where ruby:*)",
+      "Bash(npm --version)",
+      "Bash(git --version)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(bun --version)",
+      "PowerShell(if \\(!\\(Test-Path $PROFILE\\)\\) { New-Item -Path $PROFILE -ItemType File -Force }; Add-Content $PROFILE \"`nfnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression\"; Write-Host \"Klart! Profil: $PROFILE\")",
+      "PowerShell(node --version)",
+      "PowerShell(bun --version)",
+      "PowerShell(fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression; node --version; bun --version)",
+      "PowerShell(Get-ChildItem \"$env:LOCALAPPDATA\\\\Microsoft\\\\WinGet\\\\Packages\\\\Schniz.fnm_Microsoft.Winget.Source_8wekyb3d8bbwe\" -Recurse -Filter \"fnm.exe\" | Select-Object FullName)",
+      "PowerShell(powershell -c \"irm bun.sh/install.ps1 | iex\" 2>&1)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
