@@ -399,7 +399,7 @@ body {
     <div style="min-width:80px;"></div>
     <div class="nav-title"></div>
     <div style="min-width:80px;display:flex;justify-content:flex-end;">
-      <button class="auth-btn" id="auth-btn" onclick="openAuthModal()">👤</button>
+      <button class="auth-btn" id="auth-btn" onclick="openAuthModal()" aria-label="Logga in / Mitt konto">👤</button>
     </div>
   </div>
   <div class="hero-wrap">
@@ -1844,9 +1844,11 @@ function updateAuthBtn() {
     if (currentUser) {
         btn.className = 'auth-btn signed-in';
         btn.textContent = (currentUser.email || '?')[0].toUpperCase();
+        btn.setAttribute('aria-label', `Inloggad som ${currentUser.email} – klicka för kontoinställningar`);
     } else {
         btn.className = 'auth-btn';
         btn.textContent = '👤';
+        btn.setAttribute('aria-label', 'Logga in / Mitt konto');
     }
 }
 
