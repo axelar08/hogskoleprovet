@@ -1832,6 +1832,10 @@ document.getElementById('auth-password').addEventListener('keydown', e => {
 });
 
 // ─── Supabase auth & sync ──────────────────────────────────
+// SÄKERHET: Denna anon-nyckel är offentlig (avsiktligt för GitHub Pages).
+// KRAV: Row Level Security (RLS) MÅSTE vara aktiverat i Supabase-dashboarden
+// för alla tabeller (progress, profiles, etc.) så att användare bara kan
+// läsa/skriva sin egen data. Verifiera på: https://supabase.com/dashboard
 const SUPA_URL = 'https://lqskeswnykjszrzzpkks.supabase.co';
 const SUPA_KEY = 'sb_publishable_ICIQe9jzzZlFtVCqMSZ-3g_i1JunV_j';
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
