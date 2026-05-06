@@ -1879,10 +1879,12 @@ function renderCards() {
         </button>`;
     };
 
-    document.getElementById('verbal-cards').innerHTML = verbal.map(makeCard).join('');
-    document.getElementById('kvant-cards').innerHTML  = kvant.map(makeCard).join('');
+    const vEl = document.getElementById('verbal-cards');
+    const kEl = document.getElementById('kvant-cards');
+    if (vEl) vEl.innerHTML = verbal.map(makeCard).join('');
+    if (kEl) kEl.innerHTML = kvant.map(makeCard).join('');
 
-    document.querySelectorAll('.subject-card').forEach(c =>
+    document.getElementById('start-screen').querySelectorAll('.subject-card').forEach(c =>
         c.addEventListener('click', () => showSizeModal(c.dataset.quiz))
     );
 
@@ -1984,9 +1986,9 @@ function showScreen(id) {
 }
 
 function goHome() {
-    renderCards();
-    renderStats();
     showScreen('start-screen');
+    try { renderCards(); } catch(e) { console.error('renderCards:', e); }
+    try { renderStats(); } catch(e) { console.error('renderStats:', e); }
 }
 
 function startQuiz(type) {
