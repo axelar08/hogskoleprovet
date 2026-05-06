@@ -535,6 +535,157 @@ body {
 #start-screen .reset-row { padding: 10px 16px 52px; }
 #start-screen .btn-reset { color: rgba(255,255,255,0.2); font-size: 13px; }
 #start-screen .btn-reset:hover { color: var(--red); background: rgba(239,68,68,0.1); }
+
+/* ============================================================
+   DARK QUIZ SCREEN
+   ============================================================ */
+#quiz-screen { background: #0A0F24; color: white; }
+
+#quiz-screen .quiz-nav {
+  background: rgba(10,15,36,0.92);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+#quiz-screen .nav-back { color: var(--blue); }
+#quiz-screen .quiz-nav-title { color: white; }
+#quiz-screen .quiz-score-lbl { color: rgba(255,255,255,0.45); }
+#quiz-screen .prog-fill { background: var(--blue); }
+#quiz-screen .prog-wrap { background: rgba(255,255,255,0.08); }
+
+#quiz-screen .question-context {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.88);
+  box-shadow: none;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+#quiz-screen .dtk-table th { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); border-bottom-color: rgba(255,255,255,0.12); }
+#quiz-screen .dtk-table td { border-bottom-color: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); }
+#quiz-screen .dtk-table tr:last-child td { color: white; }
+#quiz-screen .dtk-note { color: rgba(255,255,255,0.4); }
+#quiz-screen .dtk-bar-lbl { color: rgba(255,255,255,0.5); }
+#quiz-screen .dtk-bar-track { background: rgba(255,255,255,0.08); }
+#quiz-screen .dtk-bar-val { color: rgba(255,255,255,0.8); }
+
+#quiz-screen .question-text { color: white; }
+
+#quiz-screen .option-btn {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.08);
+  color: white;
+  box-shadow: none;
+}
+#quiz-screen .option-letter {
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+}
+#quiz-screen .option-btn:hover:not(:disabled) {
+  border-color: var(--blue);
+  background: rgba(79,110,247,0.1);
+}
+#quiz-screen .option-btn:hover:not(:disabled) .option-letter {
+  background: var(--blue); color: white;
+}
+#quiz-screen .option-btn.correct {
+  border-color: var(--green);
+  background: rgba(34,197,94,0.12);
+}
+#quiz-screen .option-btn.correct .option-letter { background: var(--green); color: white; }
+#quiz-screen .option-btn.wrong {
+  border-color: var(--red);
+  background: rgba(239,68,68,0.1);
+}
+#quiz-screen .option-btn.wrong .option-letter { background: var(--red); color: white; }
+
+#quiz-screen .feedback {
+  box-shadow: none;
+  border-width: 1px;
+}
+#quiz-screen .feedback.correct {
+  background: rgba(34,197,94,0.1);
+  border-color: rgba(34,197,94,0.25);
+  color: rgba(255,255,255,0.85);
+}
+#quiz-screen .feedback.wrong {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.25);
+  color: rgba(255,255,255,0.85);
+}
+#quiz-screen .feedback-section-label { color: rgba(255,255,255,0.35); }
+
+/* ============================================================
+   DARK RESULTS SCREEN
+   ============================================================ */
+#results-screen { background: #0A0F24; color: white; }
+
+#results-screen .nav-bar {
+  background: rgba(10,15,36,0.92);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+#results-screen .nav-title { color: white; }
+
+#results-screen .breakdown-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: none;
+}
+#results-screen .breakdown-hdr {
+  color: rgba(255,255,255,0.4);
+  border-bottom-color: rgba(255,255,255,0.07);
+}
+#results-screen .result-item {
+  color: rgba(255,255,255,0.85);
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+#results-screen .btn-secondary {
+  background: rgba(255,255,255,0.08);
+  color: var(--blue);
+  box-shadow: none;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+#results-screen .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+/* ============================================================
+   DARK BOTTOM SHEETS (size selector + auth)
+   ============================================================ */
+.sheet-overlay { background: rgba(0,0,0,0.6); }
+.sheet {
+  background: #141929;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.sheet-handle { background: rgba(255,255,255,0.2); }
+.sheet-title { color: white; }
+.sheet-sub { color: rgba(255,255,255,0.45); }
+.sheet-label { color: rgba(255,255,255,0.4); }
+
+.size-btn {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.8);
+}
+.size-btn.active {
+  background: rgba(79,110,247,0.2);
+  border-color: var(--blue);
+  color: white;
+}
+.btn-cancel {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.7);
+}
+.btn-cancel:hover { background: rgba(255,255,255,0.12); }
+
+.auth-input {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.12);
+  color: white;
+}
+.auth-input::placeholder { color: rgba(255,255,255,0.3); }
+.auth-input:focus { border-color: var(--blue); background: rgba(79,110,247,0.08); }
+.auth-user-email { color: white; }
+.auth-user-sub { color: rgba(255,255,255,0.45); }
+.auth-sep { background: rgba(255,255,255,0.08); }
+.auth-toggle { color: var(--blue); }
 </style>
 </head>
 <body>
@@ -609,7 +760,7 @@ body {
 
 <!-- RESULTS SCREEN -->
 <div id="results-screen" class="screen">
-  <div class="nav-bar white-nav">
+  <div class="nav-bar">
     <div style="min-width:80px;"></div>
     <div class="nav-title">Resultat</div>
     <div style="min-width:80px;"></div>
