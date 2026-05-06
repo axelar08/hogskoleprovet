@@ -457,6 +457,84 @@ body {
 .hero-stat-val { font-size: 22px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px; }
 .hero-stat-lbl { font-size: 11px; color: rgba(255,255,255,0.55); font-weight: 500; margin-top: 1px; }
 .hero-divider { width: 1px; background: rgba(255,255,255,0.2); align-self: stretch; }
+
+/* ============================================================
+   DARK START SCREEN – matches Stitch "Modern Academic" design
+   ============================================================ */
+#start-screen { background: #0A0F24; color: white; }
+#start-screen .nav-bar { background: #0F1530; border-bottom: 1px solid rgba(255,255,255,0.07); }
+#start-screen .nav-brand { color: white; }
+#start-screen .auth-btn { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); }
+#start-screen .auth-btn.signed-in { background: var(--green); border-color: transparent; }
+
+/* Welcome */
+.welcome-wrap { padding: 18px 18px 6px; display: flex; justify-content: space-between; align-items: flex-start; }
+.welcome-title { font-size: 24px; font-weight: 800; color: white; letter-spacing: -0.5px; line-height: 1.25; }
+.welcome-sub { font-size: 13px; color: rgba(255,255,255,0.45); margin-top: 4px; }
+.streak-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.streak-dots { display: flex; gap: 4px; }
+.streak-dot { width: 11px; height: 11px; border-radius: 50%; background: rgba(255,255,255,0.14); }
+.streak-dot.done { background: #F59E0B; }
+.streak-label { font-size: 10px; color: rgba(255,255,255,0.35); font-weight: 500; }
+
+/* Dark stats chips */
+#start-screen .stats-scroll { padding: 6px 18px 4px; }
+#start-screen .stat-chip { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+#start-screen .stat-chip strong { color: #F59E0B; }
+
+/* Two-column section panels */
+.sections-wrap { padding: 12px 14px 6px; display: flex; gap: 10px; }
+.section-panel { flex: 1; border-radius: 20px; padding: 14px 11px; min-width: 0; }
+.section-panel.verbal { background: #0D5050; }
+.section-panel.kvant { background: #6B5000; }
+.section-panel-hdr {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 10px; padding: 0 2px;
+}
+
+/* Subject cards inside panels */
+.subject-card {
+  display: block; width: 100%; text-align: left;
+  background: rgba(5,10,28,0.4); border: none; border-radius: 14px;
+  padding: 11px 10px; margin-bottom: 8px; cursor: pointer;
+  font-family: var(--font); color: white;
+  transition: background 0.15s, transform 0.12s;
+}
+.subject-card:last-child { margin-bottom: 0; }
+.subject-card:hover { background: rgba(5,10,28,0.65); transform: translateY(-1px); }
+.subject-card:active { transform: scale(0.98); }
+
+.sc-row1 { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 9px; }
+.sc-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(255,255,255,0.12); display: flex;
+  align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.sc-text { flex: 1; min-width: 0; }
+.sc-title { font-size: 12px; font-weight: 700; color: white; line-height: 1.3; }
+.sc-sub { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 1px; line-height: 1.3; }
+.sc-btn {
+  align-self: center; flex-shrink: 0;
+  background: rgba(255,255,255,0.15); color: white;
+  border: none; border-radius: 8px; padding: 5px 10px;
+  font-size: 10.5px; font-weight: 600; cursor: pointer;
+  font-family: var(--font); white-space: nowrap;
+  transition: background 0.12s;
+}
+.sc-btn:hover { background: rgba(255,255,255,0.25); }
+
+.sc-prog-row { display: flex; align-items: center; gap: 7px; }
+.sc-prog-track { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+.sc-prog-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+.verbal .sc-prog-fill { background: #5EEAD4; }
+.kvant .sc-prog-fill { background: #FCD34D; }
+.sc-pct { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.55); white-space: nowrap; }
+
+/* Dark reset row */
+#start-screen .reset-row { padding: 10px 16px 52px; }
+#start-screen .btn-reset { color: rgba(255,255,255,0.2); font-size: 13px; }
+#start-screen .btn-reset:hover { color: var(--red); background: rgba(239,68,68,0.1); }
 </style>
 </head>
 <body>
@@ -467,45 +545,35 @@ body {
     <div class="nav-brand">Akademi<span>HP</span></div>
     <div class="nav-tabs">
       <button class="nav-tab active">Träna</button>
-      <button class="nav-tab" onclick="alert('Kommer snart!')">Statistik</button>
+      <button class="nav-tab" onclick="alert('Statistik kommer snart!')">Statistik</button>
     </div>
     <div class="nav-end">
       <button class="auth-btn" id="auth-btn" onclick="openAuthModal()">👤</button>
     </div>
   </div>
 
-  <div class="hero-wrap">
-    <div class="hero-badge">🎓 Studieapp</div>
-    <div class="hero-title">Högskole&shy;provet</div>
-    <div class="hero-sub">Välj ett delprov att träna på nedan</div>
-    <div class="hero-stats-row" id="hero-stats-row" style="display:none">
-      <div class="hero-stat">
-        <div class="hero-stat-val" id="hero-stat-done">0</div>
-        <div class="hero-stat-lbl">Frågor gjorda</div>
-      </div>
-      <div class="hero-divider"></div>
-      <div class="hero-stat">
-        <div class="hero-stat-val" id="hero-stat-pct">0%</div>
-        <div class="hero-stat-lbl">Rätt svar</div>
-      </div>
+  <div class="welcome-wrap">
+    <div>
+      <div class="welcome-title" id="welcome-title">Välkommen!</div>
+      <div class="welcome-sub">Din akademiska resa börjar här</div>
+    </div>
+    <div class="streak-wrap">
+      <div class="streak-dots" id="streak-dots"></div>
+      <div class="streak-label">Studiestreak</div>
     </div>
   </div>
 
-  <div class="content-sec" style="padding-top:18px;padding-bottom:4px;">
-    <div class="sec-header">Dina resultat</div>
-  </div>
   <div class="stats-scroll" id="stats-bar"></div>
 
-  <div class="content-sec" style="padding-top:20px;">
-    <div class="sec-title">Verbal del</div>
-    <div class="sec-subtitle">Ord, läsning och meningsuppbyggnad</div>
-    <div class="card-grid" id="verbal-cards"></div>
-  </div>
-
-  <div class="content-sec" style="padding-top:24px;">
-    <div class="sec-title">Kvantitativ del</div>
-    <div class="sec-subtitle">Matematik, data och logik</div>
-    <div class="card-grid" id="kvant-cards"></div>
+  <div class="sections-wrap">
+    <div class="section-panel verbal">
+      <div class="section-panel-hdr">Verbal Del</div>
+      <div id="verbal-cards"></div>
+    </div>
+    <div class="section-panel kvant">
+      <div class="section-panel-hdr">Kvantitativ Del</div>
+      <div id="kvant-cards"></div>
+    </div>
   </div>
 
   <div class="reset-row">
@@ -1632,50 +1700,66 @@ const cardEmojis = {
 
 function renderCards() {
     const verbal = ['ord', 'las', 'mek', 'elf'];
-    const kvant = ['xyz', 'kva', 'nog', 'dtk'];
-    const make = (keys) => keys.map(k => {
-      const total = questionBank[k].questions.length;
-      const seen = Math.min(getSeen(k).length, total);
-      const pct = total ? Math.round((seen / total) * 100) : 0;
-      const done = seen >= total && total > 0;
-      const color = cardColors[k] || '#4F6EF7';
-      const emoji = cardEmojis[k] || k.toUpperCase();
-      return `<button class="card" data-quiz="${k}" style="--card-color:${color}">
-          <div class="card-top" style="background:${color}">
-            <div class="card-icon">${emoji}</div>
-          </div>
-          <div class="card-body">
-            <div class="card-name">${sectionMeta[k].name}</div>
-            <div class="card-desc">${sectionMeta[k].desc}</div>
-            <div class="card-count-row">
-              <span class="card-count">${seen}/${total} gjorda</span>
-              ${done ? '<span class="card-done-badge">✓ Klar</span>' : ''}
+    const kvant  = ['xyz', 'kva', 'nog', 'dtk'];
+
+    const makeCard = k => {
+        const total = questionBank[k].questions.length;
+        const seen  = Math.min(getSeen(k).length, total);
+        const pct   = total ? Math.round((seen / total) * 100) : 0;
+        const done  = seen >= total && total > 0;
+        const emoji = cardEmojis[k] || '📚';
+        const short = k.toUpperCase();
+        const name  = sectionMeta[k].name;
+        const desc  = sectionMeta[k].desc;
+        return `
+        <button class="subject-card" data-quiz="${k}">
+          <div class="sc-row1">
+            <div class="sc-icon">${emoji}</div>
+            <div class="sc-text">
+              <div class="sc-title">${short} – ${name}</div>
+              <div class="sc-sub">${desc}</div>
             </div>
-            <div class="card-prog-wrap"><div class="card-prog-fill" style="width:${pct}%;background:${color}"></div></div>
+            <span class="sc-btn">Starta →</span>
           </div>
-      </button>`;
-  }).join('');
-    document.getElementById('verbal-cards').innerHTML = make(verbal);
-    document.getElementById('kvant-cards').innerHTML = make(kvant);
-    document.querySelectorAll('.card').forEach(c => {
-        c.addEventListener('click', () => showSizeModal(c.dataset.quiz));
-    });
-    updateHeroStats();
+          <div class="sc-prog-row">
+            <div class="sc-prog-track"><div class="sc-prog-fill" style="width:${pct}%"></div></div>
+            <span class="sc-pct">${done ? '✓ Klar' : pct + '% Klart'}</span>
+          </div>
+        </button>`;
+    };
+
+    document.getElementById('verbal-cards').innerHTML = verbal.map(makeCard).join('');
+    document.getElementById('kvant-cards').innerHTML  = kvant.map(makeCard).join('');
+
+    document.querySelectorAll('.subject-card').forEach(c =>
+        c.addEventListener('click', () => showSizeModal(c.dataset.quiz))
+    );
+
+    updateWelcome();
+    renderStreakDots();
 }
 
-function updateHeroStats() {
-    const stats = getStats();
-    let totalDone = 0, totalCorrect = 0, totalQ = 0;
-    Object.values(stats).forEach(s => {
-        totalDone += s.totalQuestions || 0;
-        totalCorrect += s.totalCorrect || 0;
-        totalQ += s.totalQuestions || 0;
-    });
-    if (totalDone > 0) {
-        document.getElementById('hero-stat-done').textContent = totalDone;
-        document.getElementById('hero-stat-pct').textContent = Math.round((totalCorrect / totalQ) * 100) + '%';
-        document.getElementById('hero-stats-row').style.display = 'flex';
+function updateWelcome() {
+    const titleEl = document.getElementById('welcome-title');
+    if (!titleEl) return;
+    if (currentUser && currentUser.email) {
+        const name = currentUser.email.split('@')[0];
+        const capitalized = name.charAt(0).toUpperCase() + name.slice(1);
+        titleEl.textContent = `Välkommen, ${capitalized}!`;
+    } else {
+        titleEl.textContent = 'Välkommen!';
     }
+}
+
+function renderStreakDots() {
+    const container = document.getElementById('streak-dots');
+    if (!container) return;
+    const stats = getStats();
+    const sessions = Object.values(stats).reduce((s, v) => s + (v.attempts || 0), 0);
+    const filled = Math.min(sessions, 10);
+    container.innerHTML = Array.from({length: 10}, (_, i) =>
+        `<div class="streak-dot${i < filled ? ' done' : ''}"></div>`
+    ).join('');
 }
 
 // --- Modal för att välja antal frågor ---
